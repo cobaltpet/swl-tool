@@ -206,8 +206,7 @@ def parseCommandLineOptions
                 logWithLabel(ErrorLabel, "Schedule code parameter must be 3 characters e.g. a17")
             end
             $options[ScheduleOptionKey] = scheduleCode.downcase
-            # forcing a schedule code changes time behavior from -tn to -ta
-            # BUG: do not do this if the user specified the -t option
+            # forcing a schedule code changes time behavior from -tn to -ta unless the user requests otherwise
             unless ARGV.include?("-t") || ARGV.include?("-tn")
                 removeTimeKeys = true
             end
@@ -935,15 +934,28 @@ def daysString(bc)
                 mark = false
                 first = data[0,2]
                 second = data[3,2]
-                for d in ["Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"]
-                    if first.eql?(d)
-                        mark = true
-                    elsif second.eql?(d)
-                        mark = false
+
+                daysArray = ["Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"]
+                unless daysArray.include?(first) && daysArray.include?(second)
+                    logWithLabel(DebugLabel, "Error parsing hyphenated day range! #{data}")
+                else
+                    # To ensure proper recording of all combinations of hypenated ranges, 
+                    # first rotate the array until the first specified day is element 0
+                    until daysArray[0].eql?(first)
+                        # displaying full a17 schedule results in 1147 daysArray rotates
+                        logWithLabel(DebugDebugLabel, "daysArray rotate")
+                        daysArray.rotate!
                     end
-                    if mark || second.eql?(d)
-                        markDay(d, days)
-                    end 
+                    for d in daysArray
+                        if first.eql?(d)
+                            mark = true
+                        elsif second.eql?(d)
+                            mark = false
+                        end
+                        if mark || second.eql?(d)
+                            markDay(d, days)
+                        end 
+                    end
                 end
             # search for comma-separated weekday list e.g. Mo,Th
             elsif (/^#{twoCharDays},#{twoCharDays}$/ =~ data) != nil
