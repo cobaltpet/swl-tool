@@ -208,7 +208,9 @@ def parseCommandLineOptions
             $options[ScheduleOptionKey] = scheduleCode.downcase
             # forcing a schedule code changes time behavior from -tn to -ta
             # BUG: do not do this if the user specified the -t option
-            removeTimeKeys = true
+            unless ARGV.include?("-t") || ARGV.include?("-tn")
+                removeTimeKeys = true
+            end
         when "-t"
             requireParameterForOption(opt, options)
             timeString = options.shift
