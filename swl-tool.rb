@@ -82,6 +82,7 @@ FrequencyToleranceOptionKey = "frequencyToleranceOpt" # integer
 LanguageOptionKey = "languageOpt"                     # string
 RegionOptionKey = "regionOpt"                         # string
 MeterBandOptionKey = "meterOpt"                       # integer
+MeterBandToleranceOptionKey = "meterToleranceOpt"     # integer
 ScheduleOptionKey = "scheduleOpt"                     # string
 HourOptionKey = "hourOpt"                             # integer
 MinuteOptionKey = "minuteOpt"                         # integer
@@ -179,6 +180,11 @@ def parseCommandLineOptions
             requireParameterForOption(opt, options)
             mb = options.shift.to_i
             $options[MeterBandOptionKey] = mb
+        when "-mt"
+            requireParameterForOption(opt, options)
+            requirePairedOptions(opt, "-m") # meter tolerance makes no sense without -m
+            mTolerance = options.shift.to_i
+            $options[MeterBandToleranceOptionKey] = mTolerance
         when "-r"
             requireParameterForOption(opt, options)
             region = options.shift
@@ -456,8 +462,15 @@ end
 # shortwave broadcast band reference: https://en.wikipedia.org/wiki/Shortwave_bands#International_broadcast_bands
 def doesFrequencyMatchMeterBand(freq)
     result = true
-    mb = $options[MeterBandOptionKey]
-    unless mb == nil
+    if $options.keys.include?(MeterBandOptionKey)
+        mb = $options[MeterBandOptionKey]
+        tolerance = nil
+        if $options.keys.include?(MeterBandToleranceOptionKey)
+            tolerance = $options[MeterBandToleranceOptionKey]
+        else
+            tolerance = 0
+        end
+
         result = false
         unless [120, 90, 75, 60, 49, 41, 31, 25, 22, 19, 16, 15, 13, 11].include?(mb)
             logWithLabel(ErrorLabel, "The specified value #{mb} is not a recognized broadcasting meter band [120, 90, 75, 60, 49, 41, 31, 25, 22, 19, 16, 15, 13, 11]")
@@ -465,36 +478,36 @@ def doesFrequencyMatchMeterBand(freq)
             logWithLabel(DebugLabel, "#{freq} in #{mb}m?")
             case mb
             when 120
-                result = (2300..2495).include?(freq)
+                result = ((2300-tolerance)..(2495+tolerance)).include?(freq)
             when 90
-                result = (3200..3400).include?(freq)
+                result = ((3200-tolerance)..(3400+tolerance)).include?(freq)
             when 75
-                result = (3900..4000).include?(freq)
+                result = ((3900-tolerance)..(4000+tolerance)).include?(freq)
             when 60
-                result = (4750..5060).include?(freq)
+                result = ((4750-tolerance)..(5060+tolerance)).include?(freq)
             when 49
-                result = (5800..6200).include?(freq)
+                result = ((5800-tolerance)..(6200+tolerance)).include?(freq)
             when 41
-                result = (7200..7450).include?(freq)
+                result = ((7200-tolerance)..(7450+tolerance)).include?(freq)
             when 31
-                result = (9400..9900).include?(freq)
+                result = ((9400-tolerance)..(9900+tolerance)).include?(freq)
             when 25
-                result = (11600..12100).include?(freq)
+                result = ((11600-tolerance)..(12100+tolerance)).include?(freq)
             when 22
-                result = (13570..13870).include?(freq)
+                result = ((13570-tolerance)..(13870+tolerance)).include?(freq)
             when 19
-                result = (15100..15830).include?(freq)
+                result = ((15100-tolerance)..(15830+tolerance)).include?(freq)
             when 16
-                result = (17480..17900).include?(freq)
+                result = ((17480-tolerance)..(17900+tolerance)).include?(freq)
             when 15
-                result = (18900..19020).include?(freq)
+                result = ((18900-tolerance)..(19020+tolerance)).include?(freq)
             when 13
-                result = (21450..21850).include?(freq)
+                result = ((21450-tolerance)..(21850+tolerance)).include?(freq)
             when 11
-                result = (25600..26100).include?(freq)
+                result = ((25600-tolerance)..(26100+tolerance)).include?(freq)
             end
         end
-    end
+    end # if MeterBandOptionKey
     return result
 end
 
@@ -514,16 +527,20 @@ end
 
 def doesBroadcastMatchFrequencyFilter(bc)
     match = nil
-    frequency = bc[:frequency]
-    requiredFrequency = $options[FrequencyOptionKey]
-    frequencyTolerance = $options[FrequencyToleranceOptionKey]
-    if frequencyTolerance != nil
-        if frequencyTolerance > 0
-            match = (requiredFrequency-frequencyTolerance..requiredFrequency+frequencyTolerance).include?(frequency)
+    if $options.keys.include?(FrequencyOptionKey)
+        frequency = bc[:frequency]
+        requiredFrequency = $options[FrequencyOptionKey]
+        frequencyTolerance = $options[FrequencyToleranceOptionKey]
+        if frequencyTolerance != nil
+            if frequencyTolerance > 0
+                match = (requiredFrequency-frequencyTolerance..requiredFrequency+frequencyTolerance).include?(frequency)
+            end
+        else
+            match = (frequency == requiredFrequency)
         end
     else
-        match = (frequency == requiredFrequency)
-    end
+        match = true
+    end # if FrequencyOptionKey
     return match
 end
 
