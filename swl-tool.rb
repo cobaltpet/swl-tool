@@ -21,7 +21,7 @@
 # TODO: log region as NA:WNA (continent:locale)
 
 =begin
-eibi-tool software license (The 3-Clause BSD License aka BSD-3-Clause)
+swl-tool software license (The 3-Clause BSD License aka BSD-3-Clause)
 
 Copyright 2017 Eric Weatherall : cobaltpet gmail com
 
