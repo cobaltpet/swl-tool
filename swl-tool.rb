@@ -8,8 +8,6 @@
 
 # TODO: incorporate Aoki http://www.geocities.jp/binewsjp/
 # TODO: incorporate hfcc.org?
-# TODO: allow a meter band tolerance (+- 25 kHz?)
-# TODO: consider -ft (frequency tolerance) and -mt (meter band frequency tolerance) parameters
 # TODO: add ionosphere day/night filters -id -in to prefer compatible frequencies -- determine the cutoff? 11MHz?
 # TODO: add local sunrise-sunset lookups to automatically assist with ionosphere advice
 # TODO: add a time station filter: why doesn't "-l TS" work? (must match full string; can't use -TS as a broadcaster filter due to the hyphen)
@@ -39,7 +37,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 Author = "Eric Weatherall"
 AuthorEmail = "cobaltpet gmail com"
 AuthorBlog = "http://cobaltpet.blogspot.com/"
-ScriptVersion = "2017-09-03 1849UTC"
+ScriptVersion = "2017-09-03 2114UTC"
 
 ### Required executables
 
