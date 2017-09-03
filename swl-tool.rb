@@ -401,7 +401,6 @@ end
 
 $schedule = Array::new
 
-ScheduleCode = Struct::new(:letter, :twoDigitYear) # BUG: this is not in use
 # BroadcastEntry value types
 # frequency:    integer
 # broadcaster:  string
@@ -918,7 +917,6 @@ end
 
 # generate the days string for schedule display
 # BUG: this method enforces starting the week on Sunday
-# BUG: Ranges such as We-Mo will not be recorded correctly
 # BUG: this is a large method that should be broken up
 def daysString(bc)
     result = nil
