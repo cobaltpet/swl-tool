@@ -54,6 +54,10 @@ def verifyRequiredExecutables
     end
 end
 
+### UTC
+
+$utc = Struct::new(:year, :month, :day, :hour, :minute, :weekday)
+
 ### Options
 
 $options = Hash::new
