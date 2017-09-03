@@ -118,6 +118,12 @@ def requireParameterForOption(opt, options)
     end
 end
 
+def requirePairedOptions(thisOption, thatOption)
+    unless ARGV.include?(thatOption)
+        logWithLabel(ErrorLabel, "You must use #{thatOption} when using #{thisOption}")
+    end
+end
+
 # Interpret the command-line options
 def parseCommandLineOptions
     setDefaultOptions() # this must remain as the first line
@@ -154,17 +160,11 @@ def parseCommandLineOptions
             requireParameterForOption(opt, options)
             frequency = options.shift.to_i
             $options[FrequencyOptionKey] = frequency
-            $options[FrequencyToleranceOptionKey] = 0
-        when "-f5"
+        when "-ft"
             requireParameterForOption(opt, options)
-            frequency = options.shift.to_i
-            $options[FrequencyOptionKey] = frequency
-            $options[FrequencyToleranceOptionKey] = 5
-        when "-f10"
-            requireParameterForOption(opt, options)
-            frequency = options.shift.to_i
-            $options[FrequencyOptionKey] = frequency
-            $options[FrequencyToleranceOptionKey] = 10
+            requirePairedOptions(opt, "-f") # frequency tolerance makes no sense without -f
+            fTolerance = options.shift.to_i
+            $options[FrequencyToleranceOptionKey] = fTolerance
         when "-l"
             requireParameterForOption(opt, options)
             language = options.shift
@@ -203,6 +203,7 @@ def parseCommandLineOptions
             end
             $options[ScheduleOptionKey] = scheduleCode.downcase
             # forcing a schedule code changes time behavior from -tn to -ta
+            # BUG: do not do this if the user specified the -t option
             removeTimeKeys = true
         when "-t"
             requireParameterForOption(opt, options)
@@ -257,8 +258,7 @@ def showHelpAndExit
     puts
     puts "  -b [broadcaster] : display broadcasts by this broadcaster"
     puts "  -f [frequency in kHz] : display broadcasts on this frequency"
-    puts "  -f5 [frequency in kHz] : same as above with a +- 5 kHz range"
-    puts "  -f10 [frequency in kHz] : same as above with a +- 10 kHz range"
+    puts "  -ft [frequency in kHz] : use a +- tolerance when filtering by frequency (must also use -f)"
     puts "  -l [language] : display broadcasts that use this language (EiBi language codes)"
     puts "  -le, -lk, -ls : shortcuts for specifying languages"
     puts "  -m [meterband] : display broadcasts within this meter band"
@@ -513,16 +513,16 @@ def doesBroadcastMatchBroadcasterFilter(bc)
 end
 
 def doesBroadcastMatchFrequencyFilter(bc)
-    match = true
+    match = nil
     frequency = bc[:frequency]
     requiredFrequency = $options[FrequencyOptionKey]
     frequencyTolerance = $options[FrequencyToleranceOptionKey]
     if frequencyTolerance != nil
         if frequencyTolerance > 0
             match = (requiredFrequency-frequencyTolerance..requiredFrequency+frequencyTolerance).include?(frequency)
-        else
-            match = (frequency == requiredFrequency)
         end
+    else
+        match = (frequency == requiredFrequency)
     end
     return match
 end
