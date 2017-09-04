@@ -98,6 +98,12 @@ def requirePairedOptions(thisOption, thatOption)
     end
 end
 
+def disallowOptionPairs(firstOption, secondOption)
+    if ARGV.include?(firstOption) && ARGV.include?(secondOption)
+        logWithLabel(ErrorLabel, "The options #{firstOption} and #{secondOption} may not be used together")
+    end
+end
+
 # Interpret the command-line options
 def parseCommandLineOptions
     setDefaultOptions() # this must remain as the first line
@@ -132,6 +138,7 @@ def parseCommandLineOptions
             $options[BroadcasterOptionKey] = broadcaster
         when "-f"
             requireParameterForOption(opt, options)
+            disallowOptionPairs("-f", "-m")
             frequency = options.shift.to_i
             $options[FrequencyOptionKey] = frequency
         when "-ft"
@@ -153,6 +160,7 @@ def parseCommandLineOptions
             $options[LanguageOptionKey] = "S"
         when "-m"
             requireParameterForOption(opt, options)
+            disallowOptionPairs("-f", "-m")
             mb = options.shift.to_i
             $options[MeterBandOptionKey] = mb
         when "-mt"
@@ -189,6 +197,8 @@ def parseCommandLineOptions
             end
         when "-t"
             requireParameterForOption(opt, options)
+            disallowOptionPairs("-t", "-ta")
+            disallowOptionPairs("-t", "-tn")
             timeString = options.shift
             if timeString.length == 4
                 hour = timeString[0,2].to_i
@@ -203,8 +213,12 @@ def parseCommandLineOptions
                 logWithLabel(ErrorLabel, "Incorrect parameter length for -t!")
             end
         when "-ta"
+            disallowOptionPairs("-t", "-ta")
+            disallowOptionPairs("-ta", "-tn")
             removeTimeKeys = true
         when "-tn"
+            disallowOptionPairs("-t", "-tn")
+            disallowOptionPairs("-ta", "-tn")
             {}
         else
             logWithLabel(ErrorLabel, "Unrecognized option: #{opt}")
