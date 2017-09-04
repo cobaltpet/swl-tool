@@ -2,9 +2,9 @@ swl-tool
 
 Usage
 
-$ ./swl-tool.rb -h  
-swl-tool.rb version 2017-09-04 0054UTC by Eric Weatherall : cobaltpetxxxxxxxcom : http://cobaltpet.blogspot.com/  
-EiBi shortwave broadcasting schedule info by Eike Bierwirth : http://www.eibispace.de
+    $ ./swl-tool.rb -h  
+    swl-tool.rb version 2017-09-04 0054UTC by Eric Weatherall : cobaltpetxxxxxxxcom : http://cobaltpet.blogspot.com/  
+    EiBi shortwave broadcasting schedule info by Eike Bierwirth : http://www.eibispace.de
 
     Usage: swl-tool.rb [options]
 
