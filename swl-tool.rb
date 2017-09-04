@@ -221,7 +221,7 @@ def parseCommandLineOptions
             disallowOptionPairs("-ta", "-tn")
             {}
         else
-            logWithLabel(ErrorLabel, "Unrecognized option: #{opt}")
+            logWithLabel(WarningLabel, "Unrecognized option: #{opt}")
         end
     end
 
@@ -231,6 +231,8 @@ def parseCommandLineOptions
         $options.delete(MinuteOptionKey)
     end
 end
+
+### Info and help
 
 def showTitleAndAuthor
     authorEmailComponents = AuthorEmail.split(" ")
@@ -276,6 +278,7 @@ ScheduleLabel = "s"
 DebugLabel = "debug"
 DebugDebugLabel = "debugdebug"
 ErrorLabel = "error"
+WarningLabel = "warning"
 
 def log(message)
     logWithLabel("", message)
@@ -285,17 +288,20 @@ end
 # Label constants are recommended for consistency and to ensure correct handling of debug and error features
 def logWithLabel(label, message)
     error = label.eql?(ErrorLabel)
+    displayLog = true
+    if (DebugLabel.eql?(label) && (false == $options[DebugOptionKey])) ||
+       (DebugDebugLabel.eql?(label) && (false == $options[DebugDebugOptionKey]))
+        displayLog = false
+    end
+
+    formattedMessage = "#{label}: #{message}"
     if error
-        puts "***"
+        formattedMessage = "***\n" + formattedMessage + "\n***"
     end
-    unless (DebugLabel.eql?(label) && $options[DebugOptionKey] == false) ||
-           (DebugDebugLabel.eql?(label) && $options[DebugDebugOptionKey] == false)
-        puts "#{label}: #{message}"
+    if displayLog
+        puts formattedMessage
     end
     if error
-        puts "***"
-    end
-    if label.eql?(ErrorLabel)
         exit(1)
     end
 end
@@ -1055,7 +1061,7 @@ def isEiBiFetchNeeded(scheduleCode)
     # look for file locally
     # if missing, or if present and more than a week old, then fetch
 
-    expectedFile = storagePath + "/" + filenameForEiBiSchedule(scheduleCode)
+    expectedFile = storagePath + filenameForEiBiSchedule(scheduleCode)
     if File.exist?(expectedFile)
         mtime = File::new(expectedFile).mtime
         if mtime < (Time::now - 60*60*24*7)
@@ -1177,7 +1183,7 @@ end
 
 def parseEiBiSchedule(scheduleCode)
     loaded = false
-    schedulePath = storagePath() + "/" + filenameForEiBiSchedule(scheduleCode)
+    schedulePath = storagePath() + filenameForEiBiSchedule(scheduleCode)
     if File.exist?(schedulePath)
         logWithLabel(DebugLabel, "parsing #{schedulePath}")
         # open the file
@@ -1194,7 +1200,7 @@ def parseEiBiSchedule(scheduleCode)
         loaded = true
     end
     unless loaded
-        logWithLabel(ErrorLabel, "Could not find an EiBi schedule in #{storagePath}")
+        logWithLabel(ErrorLabel, "Could not find an EiBi schedule in #{storagePath()}")
     else
         logWithLabel(InfoLabel, "Loaded #{$schedule.count} schedule entries")
     end
@@ -1226,7 +1232,7 @@ def parseEiBiTextLine(line)
     inactive = fields[8].eql?("8")
     bc[:inactive] = inactive
     if inactive
-        logWithLabel(DebugLabel, "inactive: #{line}")
+        logWithLabel(DebugDebugLabel, "inactive: #{line}")
     end
 
     # hhmm-hhmm -- note that this block could be omitted for inactives
