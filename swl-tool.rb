@@ -92,16 +92,27 @@ def requireParameterForOption(opt, options)
     end
 end
 
+# Certain parameters do not make sense unless paired with another option
 def requirePairedOptions(thisOption, thatOption)
     unless ARGV.include?(thatOption)
         logWithLabel(ErrorLabel, "You must use #{thatOption} when using #{thisOption}")
     end
 end
 
+# Certain pairs of differing options may not be used together
 def disallowOptionPairs(firstOption, secondOption)
     if ARGV.include?(firstOption) && ARGV.include?(secondOption)
         logWithLabel(ErrorLabel, "The options #{firstOption} and #{secondOption} may not be used together")
     end
+end
+
+# Most options will not behave as expected if duplicated
+def disallowOptionDuplication(option)
+    count = 0
+    for opt in ARGV
+        count += 1 if option.eql?(opt)
+    end
+    logWithLabel(ErrorLabel, "The option #{option} may only be used once") if count > 1
 end
 
 # Interpret the command-line options
@@ -134,6 +145,7 @@ def parseCommandLineOptions
             $options[DebugOptionKey] = true
         when "-b"
             requireParameterForOption(opt, options)
+            disallowOptionDuplication(opt)
             broadcaster = options.shift
             $options[BroadcasterOptionKey] = broadcaster
         when "-bt"
@@ -143,6 +155,7 @@ def parseCommandLineOptions
             removeTimeKeys = true
         when "-f"
             requireParameterForOption(opt, options)
+            disallowOptionDuplication(opt)
             disallowOptionPairs("-f", "-m")
             frequency = options.shift.to_i
             $options[FrequencyOptionKey] = frequency
@@ -155,6 +168,7 @@ def parseCommandLineOptions
             $options[InactiveDisplayOptionKey] = true
         when "-l"
             requireParameterForOption(opt, options)
+            disallowOptionDuplication(opt)
             language = options.shift
             $options[LanguageOptionKey] = language
         when "-le"
@@ -165,6 +179,7 @@ def parseCommandLineOptions
             $options[LanguageOptionKey] = "S"
         when "-m"
             requireParameterForOption(opt, options)
+            disallowOptionDuplication(opt)
             disallowOptionPairs("-f", "-m")
             mb = options.shift.to_i
             $options[MeterBandOptionKey] = mb
@@ -175,6 +190,7 @@ def parseCommandLineOptions
             $options[MeterBandToleranceOptionKey] = mTolerance
         when "-r"
             requireParameterForOption(opt, options)
+            disallowOptionDuplication(opt)
             region = options.shift
             $options[RegionOptionKey] = region
         when "-rna"
@@ -202,6 +218,7 @@ def parseCommandLineOptions
             end
         when "-t"
             requireParameterForOption(opt, options)
+            disallowOptionDuplication(opt)
             disallowOptionPairs("-t", "-ta")
             disallowOptionPairs("-t", "-tn")
             timeString = options.shift
