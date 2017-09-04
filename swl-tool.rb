@@ -1027,10 +1027,17 @@ def showMatchingScheduleData
             startTimeString = timeStringFromHoursAndMinutes(bc[:startHour], bc[:startMinute])
             endTimeString = timeStringFromHoursAndMinutes(bc[:endHour], bc[:endMinute])
 
+            # compose the broadcast time/days string
+            broadcastTime = "#{startTimeString} - #{endTimeString} #{daysString(bc)}"
+
             # expand language code to description
             language = languagesFromString(bc[:languages])
 
-            logWithLabel(ScheduleLabel, "#{freqString} kHz : [#{startTimeString} - #{endTimeString} #{daysString(bc)}] : #{bc[:broadcaster]} : #{language} to #{bc[:targetRegion]}")
+            # expand station name to the maximum 23 characters per http://eibispace.de/dx/README.TXT
+            stationName = bc[:broadcaster]
+            stationName += " " while stationName.length < 23
+
+            logWithLabel(ScheduleLabel, "#{freqString} kHz : [#{broadcastTime}] : #{stationName} : #{language} to #{bc[:targetRegion]}")
         end
     end
 end
