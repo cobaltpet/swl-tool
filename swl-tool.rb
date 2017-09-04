@@ -54,20 +54,6 @@ end
 
 $options = Hash::new
 
-# options: 
-# -d : debug (print raw and formatted data)
-# -b [broadcaster] : require this broadcaster
-# -f [frequency in kHz] : require this frequency
-# -f5 [frequency in kHz] : require this frequency, plus or minus 5
-# -f10 [frequency in kHz] : require this frequency, plus or minus 10
-# -l [language] : require this language
-# -le : require english
-# -ls : require spanish
-# -m [nnn] : require this meter band
-# -r [region] : require this region
-# -rna, -rsa, -reu, -raf, -ras, -roc : require north america, south america, europe, africa, asia, or oceania
-# -t [hhmm] : search for broadcasts around the specified time
-
 DebugOptionKey = "debugOpt"                           # boolean
 DebugDebugOptionKey = "debugDebugOpt"                 # boolean
 BroadcasterOptionKey = "broadcasterOpt"               # string
