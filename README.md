@@ -1,6 +1,10 @@
 swl-tool
+========
+
+swl-tool is a ruby script that fetches, parses, and displays shortwave broadcast schedule info.
 
 Usage
+=====
 
     $ ./swl-tool.rb -h  
     swl-tool.rb version 2017-09-04 0054UTC by Eric Weatherall : cobaltpetxxxxxxxcom : http://cobaltpet.blogspot.com/  
@@ -28,6 +32,7 @@ Usage
       -tn : display broadcasts around now [default]
 
 Example output
+==============
 
     $ ./swl-tool.rb -tn -le -rna -m 49  
     swl-tool.rb version 2017-09-04 0054UTC by Eric Weatherall : cobaltpetxxxxxxxcom : http://cobaltpet.blogspot.com/  
