@@ -136,6 +136,11 @@ def parseCommandLineOptions
             requireParameterForOption(opt, options)
             broadcaster = options.shift
             $options[BroadcasterOptionKey] = broadcaster
+        when "-bt"
+            # this is described as a broadcaster option but we are searching for a specific language code
+            # the options -b and -bt may be used together since they write into distinct option keys
+            $options[LanguageOptionKey] = "-TS"
+            removeTimeKeys = true
         when "-f"
             requireParameterForOption(opt, options)
             disallowOptionPairs("-f", "-m")
@@ -225,7 +230,7 @@ def parseCommandLineOptions
         end
     end
 
-    # when -s or -ta is used
+    # when -bt, -s or -ta is used
     if removeTimeKeys
         $options.delete(HourOptionKey)
         $options.delete(MinuteOptionKey)
@@ -255,6 +260,7 @@ def showHelpAndExit
     puts "  -h  : show help and exit"
     puts
     puts "  -b [broadcaster] : display broadcasts by this broadcaster"
+    puts "  -bt : display time stations"
     puts "  -f [frequency in kHz] : display broadcasts on this frequency"
     puts "  -ft [frequency in kHz] : use a +- tolerance when filtering by frequency (must also use -f)"
     puts "  -i : display inactive broadcasts"
