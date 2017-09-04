@@ -42,22 +42,13 @@ ScriptVersion = "2017-09-03 2114UTC"
 
 ### Required executables
 
-DatePath = "/bin/date"
 CurlPath = "/usr/bin/curl"
 
 def verifyRequiredExecutables
-    unless File.executable?(DatePath)
-        logWithLabel(ErrorLabel, "Problem with #{DatePath} -- either missing or not executable")
-    end
-
     unless File.executable?(CurlPath)
         logWithLabel(ErrorLabel, "Problem with #{CurlPath} -- either missing or not executable")
     end
 end
-
-### UTC
-
-$utc = Struct::new(:year, :month, :day, :hour, :minute, :weekday)
 
 ### Options
 
@@ -104,8 +95,8 @@ def setDefaultOptions
 
     # default behavior: display broadcasts around now (UTC) aka -tn
     # determine current UTC time
-    utcHour = %x(#{DatePath} -u +'%H').to_i
-    utcMinute = %x(#{DatePath} -u +'%M').to_i
+    utcHour = Time.now.utc.hour
+    utcMinute = Time.now.utc.min
     $options[HourOptionKey] = utcHour
     $options[MinuteOptionKey] = utcMinute
 end
@@ -423,8 +414,9 @@ BroadcastEntry = Struct::new(:frequency, :broadcaster, :origin, :targetRegion, :
 # BUG: the schedule code is based on assumptions; authoritative reference needed
 # Current assumption is that "A" summer schedule begins during Mar; "B" winter schedule begins during Oct
 def currentScheduleCode
-    twoDigitYear = %x(#{DatePath} -u +'%y').to_i
-    month = %x(#{DatePath} -u +'%m').to_i
+    year = Time.now.utc.year
+    twoDigitYear = year.to_s[2,2].to_i
+    month = Time.now.utc.month
     logWithLabel(DebugDebugLabel, "date #{twoDigitYear}-#{month}")
 
     case month
