@@ -6,6 +6,9 @@
 # Developed in a secret location in Northern California
 # Env: ruby 2.4.1p111 (2017-03-22 revision 58053) [x86_64-darwin16]
 
+require 'net/http'
+require 'uri'
+
 # TODO: incorporate Aoki http://www.geocities.jp/binewsjp/
 # TODO: incorporate hfcc.org?
 # TODO: add ionosphere day/night filters -id -in to prefer compatible frequencies -- determine the cutoff? 11MHz?
@@ -13,8 +16,6 @@
 # TODO: add a time station filter: why doesn't "-l TS" work? (must match full string; can't use -TS as a broadcaster filter due to the hyphen)
 # TODO: update BroadcastEntry with station type and program contents flags?
 # TODO: day of week filtering when using -tn option
-# TODO: implement lookup of executable paths for date and curl (might they differ on other systems?)
-# TODO: implement wget as a fallback if curl is not installed
 # TODO: allow customization of file path for those who already have an EiBi archive or wish to keep files in a particular location
 # TODO: log region as NA:WNA (continent:locale)
 
@@ -38,17 +39,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 Author = "Eric Weatherall"
 AuthorEmail = "cobaltpet gmail com"
 AuthorBlog = "http://cobaltpet.blogspot.com/"
-ScriptVersion = "2017-09-04 0054UTC"
-
-### Required executables
-
-CurlPath = "/usr/bin/curl"
-
-def verifyRequiredExecutables
-    unless File.executable?(CurlPath)
-        logWithLabel(ErrorLabel, "Problem with #{CurlPath} -- either missing or not executable")
-    end
-end
+ScriptVersion = "2017-09-04 1823UTC"
 
 ### Options
 
@@ -1027,7 +1018,7 @@ end
 ### Files
 
 def storagePath
-    return Dir.home + "/.swl-tool"
+    return Dir.home + "/.swl-tool/"
 end
 
 def createDirectoryIfNeeded
@@ -1082,14 +1073,34 @@ def fetchEiBiSchedule(scheduleCode)
 
     success = nil
     for url in eibiURLs
-        curlcmd = "#{CurlPath} #{url} --fail -o #{storagePath}/#{filenameForEiBiSchedule(scheduleCode)}"
-        logWithLabel(DebugLabel, curlcmd)
-        success = system(curlcmd)
-        if success
-            # skip the second url if it exists, when the first url succeeds
-            break
+        success = nil
+        uri = URI(url)
+        filename = filenameForEiBiSchedule(scheduleCode)
+ 
+        logWithLabel(InfoLabel, "Downloading #{filename} ...")
+        response = Net::HTTP.get_response(uri)
+        responseCode = response.code.to_i
+        logWithLabel(DebugLabel, "http response code for #{url} is #{responseCode}")
+
+        case responseCode
+        when 200..299
+            success = true
+            if response.class.body_permitted?
+                File.open(storagePath() + filename, "w") { |f|
+                    f.write(response.body)
+                    f.flush()
+                }
+                break
+            else
+                logWithLabel(ErrorLabel, "http response body not permitted? #{response}")
+            end
+        when 400..499
+            success = false
+        else
+            logWithLabel(DebugLabel, "Unhandled http response code #{responseCode}")
+            success = false
         end
-    end
+    end # for url in eibiURLs
     return success
 end
 
@@ -1104,7 +1115,7 @@ def fetchAndLoadEiBiSchedule
         # Note that a06 is the earliest eibi csv available
         scheduleCodeYear = scheduleCodes[0][1,2].to_i
         if scheduleCodeYear < 6
-            logWithLabel(ErrorLabel, "Schedule code #{scheduleCode} is less than the minimum: a06")
+            logWithLabel(ErrorLabel, "Schedule code #{scheduleCodes[0]} is less than the minimum: a06")
         end
     else
         # otherwise use the current and previous schedule codes
@@ -1118,7 +1129,7 @@ def fetchAndLoadEiBiSchedule
         if isEiBiFetchNeeded(scheduleCode)
             success = fetchEiBiSchedule(scheduleCode)
             unless success
-                logWithLabel(DebugLabel, "curl error")
+                logWithLabel(DebugLabel, "http fetch error")
             end
         end
         if success
