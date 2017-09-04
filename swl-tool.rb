@@ -1127,7 +1127,7 @@ def fetchEiBiSchedule(scheduleCode)
         uri = URI(url)
         filename = filenameForEiBiSchedule(scheduleCode)
  
-        logWithLabel(InfoLabel, "Downloading #{filename} ...")
+        logWithLabel(InfoLabel, "Trying #{url} ...")
         response = Net::HTTP.get_response(uri)
         responseCode = response.code.to_i
         logWithLabel(DebugLabel, "http response code for #{url} is #{responseCode}")
@@ -1174,8 +1174,8 @@ def fetchAndLoadEiBiSchedule
     for attempt in 0..(scheduleCodes.length - 1)
         scheduleCode = scheduleCodes[attempt]
         logWithLabel(DebugLabel, "checking schedule #{scheduleCode}")
-        # check if we have a fresh copy. if not, fetch
         success = true
+        # check if we have a fresh copy. if not, fetch
         if isEiBiFetchNeeded(scheduleCode)
             success = fetchEiBiSchedule(scheduleCode)
             unless success
