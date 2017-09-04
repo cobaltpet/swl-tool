@@ -66,6 +66,7 @@ MeterBandToleranceOptionKey = "meterToleranceOpt"     # integer
 ScheduleOptionKey = "scheduleOpt"                     # string
 HourOptionKey = "hourOpt"                             # integer
 MinuteOptionKey = "minuteOpt"                         # integer
+InactiveDisplayOptionKey = "inactiveOpt"              # boolean
 
 def setDefaultOptions
     # note that debug logging is not possible in this method
@@ -73,11 +74,12 @@ def setDefaultOptions
     $options[DebugOptionKey] = false
     $options[DebugDebugOptionKey] = false
     # do not set a default broadcaster
-    # do not set a default frequency or frequency range
+    # do not set a default frequency or tolerance
     # do not set a default language
-    # do not set a default meter band
+    # do not set a default meter band or tolerance
     # do not set a default region
     # do not set a default schedule code
+    $options[InactiveDisplayOptionKey] = false
 
     # default behavior: display broadcasts around now (UTC) aka -tn
     # determine current UTC time
@@ -146,6 +148,8 @@ def parseCommandLineOptions
             requirePairedOptions(opt, "-f") # frequency tolerance makes no sense without -f
             fTolerance = options.shift.to_i
             $options[FrequencyToleranceOptionKey] = fTolerance
+        when "-i"
+            $options[InactiveDisplayOptionKey] = true
         when "-l"
             requireParameterForOption(opt, options)
             language = options.shift
@@ -246,6 +250,7 @@ def showHelpAndExit
     puts "  -b [broadcaster] : display broadcasts by this broadcaster"
     puts "  -f [frequency in kHz] : display broadcasts on this frequency"
     puts "  -ft [frequency in kHz] : use a +- tolerance when filtering by frequency (must also use -f)"
+    puts "  -i : display inactive broadcasts"
     puts "  -l [language] : display broadcasts that use this language (EiBi language codes)"
     puts "  -le, -lk, -ls : shortcuts for specifying languages"
     puts "  -m [meterband] : display broadcasts within this meter band"
@@ -978,6 +983,17 @@ def daysString(bc)
     return result
 end
 
+def doesBroadcastMatchInactiveFilter(bc)
+    match = true
+    if bc[:inactive]
+        displayInactive = $options[InactiveDisplayOptionKey]
+        if (nil == displayInactive) || (false == displayInactive)
+            match = false
+        end
+    end
+    return match
+end
+
 def showMatchingScheduleData
     # filters: broadcaster, frequency, language, meterband, region, time
     for bc in $schedule
@@ -987,7 +1003,8 @@ def showMatchingScheduleData
            doesBroadcastMatchBroadcasterFilter(bc) &&
            doesBroadcastMatchMeterBandFilter(bc) &&
            doesBroadcastMatchRegionFilter(bc) &&
-           doesBroadcastMatchTimeFilter(bc)
+           doesBroadcastMatchTimeFilter(bc) &&
+           doesBroadcastMatchInactiveFilter(bc)
 
             # convert frequency into 5-char string
             freqString = bc[:frequency].to_s
