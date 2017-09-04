@@ -39,7 +39,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 Author = "Eric Weatherall"
 AuthorEmail = "cobaltpet gmail com"
 AuthorBlog = "http://cobaltpet.blogspot.com/"
-ScriptVersion = "2017-09-04 1823UTC"
+ScriptVersion = "2017-09-04 2005UTC"
 
 ### Options
 
