@@ -1242,7 +1242,6 @@ end
 ### Main
 
 def main
-    verifyRequiredExecutables()
     parseCommandLineOptions()
     createDirectoryIfNeeded()
     if fetchAndLoadEiBiSchedule()
