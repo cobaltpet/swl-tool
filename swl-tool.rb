@@ -229,7 +229,7 @@ end
 
 def showTitleAndAuthor
     authorEmailComponents = AuthorEmail.split(" ")
-    puts "swl-tool.rb version #{ScriptVersion} by #{Author} : #{authorEmailComponents[0]}@#{authorEmailComponents[1]}.#{authorEmailComponents[2]}"
+    puts "swl-tool.rb version #{ScriptVersion} by #{Author} : #{authorEmailComponents[0]}@#{authorEmailComponents[1]}.#{authorEmailComponents[2]} : #{AuthorBlog}"
 end
 
 def showTerseCredits
