@@ -84,10 +84,10 @@ end
 # The options array may not be empty and the next option [0] may not begin with a hyphen
 def requireParameterForOption(opt, options)
     if 0 == options.count
-        logWithLabel(ErrorLabel, "Parameter for option #{opt} is missing!")
+        log(ErrorLabel, "Parameter for option #{opt} is missing!")
     else
         if options[0][0].eql?("-")
-            logWithLabel(ErrorLabel, "Parameter for option #{opt} may not begin with a hyphen.")
+            log(ErrorLabel, "Parameter for option #{opt} may not begin with a hyphen.")
         end
     end
 end
@@ -95,14 +95,14 @@ end
 # Certain parameters do not make sense unless paired with another option
 def requirePairedOptions(thisOption, thatOption)
     unless ARGV.include?(thatOption)
-        logWithLabel(ErrorLabel, "You must use #{thatOption} when using #{thisOption}")
+        log(ErrorLabel, "You must use #{thatOption} when using #{thisOption}")
     end
 end
 
 # Certain pairs of differing options may not be used together
 def disallowOptionPairs(firstOption, secondOption)
     if ARGV.include?(firstOption) && ARGV.include?(secondOption)
-        logWithLabel(ErrorLabel, "The options #{firstOption} and #{secondOption} may not be used together")
+        log(ErrorLabel, "The options #{firstOption} and #{secondOption} may not be used together")
     end
 end
 
@@ -112,7 +112,7 @@ def disallowOptionDuplication(option)
     for opt in ARGV
         count += 1 if option.eql?(opt)
     end
-    logWithLabel(ErrorLabel, "The option #{option} may only be used once") if count > 1
+    log(ErrorLabel, "The option #{option} may only be used once") if count > 1
 end
 
 # Interpret the command-line options
@@ -123,7 +123,7 @@ def parseCommandLineOptions
         $options[DebugOptionKey] = true
     end
 
-    logWithLabel(DebugLabel, "ARGV: #{ARGV}")
+    log(DebugLabel, "ARGV: #{ARGV}")
     if ARGV.include?("-h")
         showHelpAndExit()
     else
@@ -135,7 +135,7 @@ def parseCommandLineOptions
     options = Array::new(ARGV)
     while options.count > 0
         opt = options.shift
-        logWithLabel(DebugLabel, "opt: #{opt}")
+        log(DebugLabel, "opt: #{opt}")
         case opt
         when "-d"
             # debug already handled above
@@ -209,7 +209,7 @@ def parseCommandLineOptions
             requireParameterForOption(opt, options)
             scheduleCode = options.shift
             if scheduleCode.length != 3
-                logWithLabel(ErrorLabel, "Schedule code parameter must be 3 characters e.g. a17")
+                log(ErrorLabel, "Schedule code parameter must be 3 characters e.g. a17")
             end
             $options[ScheduleOptionKey] = scheduleCode.downcase
             # forcing a schedule code changes time behavior from -tn to -ta unless the user requests otherwise
@@ -229,10 +229,10 @@ def parseCommandLineOptions
                     $options[HourOptionKey] = hour
                     $options[MinuteOptionKey] = minute
                 else
-                    logWithLabel(ErrorLabel, "Invalid time string passed to -t! #{timeString} does not satisfy h(0..23) & m(0..59)")
+                    log(ErrorLabel, "Invalid time string passed to -t! #{timeString} does not satisfy h(0..23) & m(0..59)")
                 end
             else
-                logWithLabel(ErrorLabel, "Incorrect parameter length for -t!")
+                log(ErrorLabel, "Incorrect parameter length for -t!")
             end
         when "-ta"
             disallowOptionPairs("-t", "-ta")
@@ -243,7 +243,7 @@ def parseCommandLineOptions
             disallowOptionPairs("-ta", "-tn")
             {}
         else
-            logWithLabel(WarningLabel, "Unrecognized option: #{opt}")
+            log(WarningLabel, "Unrecognized option: #{opt}")
         end
     end
 
@@ -263,7 +263,7 @@ end
 
 def showTerseCredits
     showTitleAndAuthor()
-    logWithLabel("credit", "Shortwave broadcast schedule data from EiBi")
+    log("credit", "Shortwave broadcast schedule data from EiBi")
 end
 
 def showHelpAndExit
@@ -303,13 +303,9 @@ DebugDebugLabel = "debugdebug"
 ErrorLabel = "error"
 WarningLabel = "warning"
 
-def log(message)
-    logWithLabel("", message)
-end
-
 # Log a message prefixed with a label in the format "label: message"
 # Label constants are recommended for consistency and to ensure correct handling of debug and error features
-def logWithLabel(label, message)
+def log(label, message)
     error = label.eql?(ErrorLabel)
     displayLog = true
     if (DebugLabel.eql?(label) && (false == $options[DebugOptionKey])) ||
@@ -345,7 +341,7 @@ def selfishStats
                 northAmBC += 1
             end
         end
-        logWithLabel("selfish", "#{englishBC} English broadcasts / #{northAmBC} North America broadcasts")
+        log("selfish", "#{englishBC} English broadcasts / #{northAmBC} North America broadcasts")
     end
 end
 
@@ -359,7 +355,7 @@ def doubleDebug
 end
 
 def debugLanguages
-    logWithLabel(DebugLabel, "language hash size: #{$languages.count}")
+    log(DebugLabel, "language hash size: #{$languages.count}")
     langs = Hash::new
     for bc in $schedule
         codes = bc[:languages].split(',')
@@ -386,7 +382,7 @@ def debugBroadcasters
         broadcasters[broadcaster] = broadcaster
     end
     for key in broadcasters.keys
-        logWithLabel(DebugLabel, "broadcaster: #{key}")
+        log(DebugLabel, "broadcaster: #{key}")
     end
 end
 
@@ -398,7 +394,7 @@ def debugRegions
         regions[target] = target
     end
     for key in regions.keys
-        logWithLabel(DebugLabel, "region: #{key}")
+        log(DebugLabel, "region: #{key}")
     end
 end
 
@@ -411,7 +407,7 @@ def debugDays
         end
     end
     for day in daysHash.keys
-        logWithLabel(DebugLabel, "day: #{day}")
+        log(DebugLabel, "day: #{day}")
     end
 end
 
@@ -443,7 +439,7 @@ def currentScheduleCode
     year = Time.now.utc.year
     twoDigitYear = year.to_s[2,2].to_i
     month = Time.now.utc.month
-    logWithLabel(DebugDebugLabel, "date #{twoDigitYear}-#{month}")
+    log(DebugDebugLabel, "date #{twoDigitYear}-#{month}")
 
     case month
     when 1..2
@@ -454,10 +450,10 @@ def currentScheduleCode
     when 10..12
         letter = "b"
     else
-        logWithLabel(ErrorLabel, "Date parsing error! twoDigitYear(#{twoDigitYear}) month(#{month})")
+        log(ErrorLabel, "Date parsing error! twoDigitYear(#{twoDigitYear}) month(#{month})")
     end
     code = letter + twoDigitYear.to_s
-    logWithLabel(DebugDebugLabel, "scheduleCode #{code}")
+    log(DebugDebugLabel, "scheduleCode #{code}")
     return code
 end
 
@@ -494,9 +490,9 @@ def doesFrequencyMatchMeterBand(freq)
 
         result = false
         unless [120, 90, 75, 60, 49, 41, 31, 25, 22, 19, 16, 15, 13, 11].include?(mb)
-            logWithLabel(ErrorLabel, "The specified value #{mb} is not a recognized broadcasting meter band [120, 90, 75, 60, 49, 41, 31, 25, 22, 19, 16, 15, 13, 11]")
+            log(ErrorLabel, "The specified value #{mb} is not a recognized broadcasting meter band [120, 90, 75, 60, 49, 41, 31, 25, 22, 19, 16, 15, 13, 11]")
         else
-            logWithLabel(DebugLabel, "#{freq} in #{mb}m?")
+            log(DebugLabel, "#{freq} in #{mb}m?")
             case mb
             when 120
                 result = ((2300-tolerance)..(2495+tolerance)).include?(freq)
@@ -876,7 +872,7 @@ def languagesFromString(string)
             languages.push(language)
         else
             languages.push(code)
-            logWithLabel(DebugLabel, "Unrecognized language code: #{code}")
+            log(DebugLabel, "Unrecognized language code: #{code}")
         end
     end
     # build a return string from the array that we have
@@ -959,13 +955,13 @@ def daysString(bc)
 
                 daysArray = ["Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"]
                 unless daysArray.include?(first) && daysArray.include?(second)
-                    logWithLabel(DebugLabel, "Error parsing hyphenated day range! #{data}")
+                    log(DebugLabel, "Error parsing hyphenated day range! #{data}")
                 else
                     # To ensure proper recording of all combinations of hypenated ranges, 
                     # first rotate the array until the first specified day is element 0
                     until daysArray[0].eql?(first)
                         # displaying full a17 schedule results in 1147 daysArray rotates
-                        logWithLabel(DebugDebugLabel, "daysArray rotate")
+                        log(DebugDebugLabel, "daysArray rotate")
                         daysArray.rotate!
                     end
                     for d in daysArray
@@ -995,7 +991,7 @@ def daysString(bc)
                 markDay(data, days)
             # search for day-of-week digit list e.g. 2356
             elsif (/^[1-7]+$/ =~ data) != nil
-                #logWithLabel(DebugLabel, "chopping digits #{data}")
+                #log(DebugLabel, "chopping digits #{data}")
                 data.split("").each do |digit|
                     markDay(digit.to_i, days)
                 end
@@ -1009,7 +1005,7 @@ def daysString(bc)
                     # BUG: this implementation results in data loss. original string could be displayed
                     days[0] = "*" # the indicator for an unparsed day value
                 else
-                    logWithLabel(DebugLabel, "Unparsed day string: #{data}")
+                    log(DebugLabel, "Unparsed day string: #{data}")
                 end
             end
             result = days.join
@@ -1066,7 +1062,7 @@ def showMatchingScheduleData
             stationName = bc[:broadcaster]
             stationName += " " while stationName.length < 23
 
-            logWithLabel(ScheduleLabel, "#{freqString} kHz : [#{broadcastTime}] : #{stationName} : #{language} to #{bc[:targetRegion]}")
+            log(ScheduleLabel, "#{freqString} kHz : [#{broadcastTime}] : #{stationName} : #{language} to #{bc[:targetRegion]}")
         end
     end
 end
@@ -1080,7 +1076,7 @@ end
 def createDirectoryIfNeeded
     storagePath = storagePath()
     unless Dir.exist?(storagePath)
-        log("Creating directory for files: #{storagePath}")
+        log(InfoLabel, "Creating directory for files: #{storagePath}")
         Dir.mkdir(storagePath, 0700)
         # BUG: unhandled SystemCallError
     end
@@ -1101,12 +1097,12 @@ def isEiBiFetchNeeded(scheduleCode)
     if File.exist?(expectedFile)
         mtime = File::new(expectedFile).mtime
         if mtime < (Time::now - 60*60*24*7)
-            logWithLabel(InfoLabel, "EiBi schedule file too old; fetching")
+            log(InfoLabel, "EiBi schedule file too old; fetching")
             fetchNeeded = true
             # BUG: rename existing file to an archived copy with creation timestamp
         end
     else
-        logWithLabel(InfoLabel, "EiBi schedule file not found; fetching")
+        log(InfoLabel, "EiBi schedule file not found; fetching")
         fetchNeeded = true
     end
     return fetchNeeded
@@ -1133,10 +1129,10 @@ def fetchEiBiSchedule(scheduleCode)
         uri = URI(url)
         filename = filenameForEiBiSchedule(scheduleCode)
  
-        logWithLabel(InfoLabel, "Trying #{url} ...")
+        log(InfoLabel, "Trying #{url} ...")
         response = Net::HTTP.get_response(uri)
         responseCode = response.code.to_i
-        logWithLabel(DebugLabel, "http response code for #{url} is #{responseCode}")
+        log(DebugLabel, "http response code for #{url} is #{responseCode}")
 
         case responseCode
         when 200..299
@@ -1148,12 +1144,12 @@ def fetchEiBiSchedule(scheduleCode)
                 }
                 break
             else
-                logWithLabel(ErrorLabel, "http response body not permitted? #{response}")
+                log(ErrorLabel, "http response body not permitted? #{response}")
             end
         when 400..499
             success = false
         else
-            logWithLabel(DebugLabel, "Unhandled http response code #{responseCode}")
+            log(DebugLabel, "Unhandled http response code #{responseCode}")
             success = false
         end
     end # for url in eibiURLs
@@ -1171,7 +1167,7 @@ def fetchAndLoadEiBiSchedule
         # Note that a06 is the earliest eibi csv available
         scheduleCodeYear = scheduleCodes[0][1,2].to_i
         if scheduleCodeYear < 6
-            logWithLabel(ErrorLabel, "Schedule code #{scheduleCodes[0]} is less than the minimum: a06")
+            log(ErrorLabel, "Schedule code #{scheduleCodes[0]} is less than the minimum: a06")
         end
     else
         # otherwise use the current and previous schedule codes
@@ -1179,13 +1175,13 @@ def fetchAndLoadEiBiSchedule
     end
     for attempt in 0..(scheduleCodes.length - 1)
         scheduleCode = scheduleCodes[attempt]
-        logWithLabel(DebugLabel, "checking schedule #{scheduleCode}")
+        log(DebugLabel, "checking schedule #{scheduleCode}")
         success = true
         # check if we have a fresh copy. if not, fetch
         if isEiBiFetchNeeded(scheduleCode)
             success = fetchEiBiSchedule(scheduleCode)
             unless success
-                logWithLabel(DebugLabel, "http fetch error")
+                log(DebugLabel, "http fetch error")
             end
         end
         if success
@@ -1221,7 +1217,7 @@ def parseEiBiSchedule(scheduleCode)
     loaded = false
     schedulePath = storagePath() + filenameForEiBiSchedule(scheduleCode)
     if File.exist?(schedulePath)
-        logWithLabel(DebugLabel, "parsing #{schedulePath}")
+        log(DebugLabel, "parsing #{schedulePath}")
         # open the file
         firstLineSkipped = false
         File.open(schedulePath, "rb:iso-8859-1").each_line do |line|
@@ -1237,9 +1233,9 @@ def parseEiBiSchedule(scheduleCode)
         loaded = true
     end
     unless loaded
-        logWithLabel(ErrorLabel, "Could not find an EiBi schedule in #{storagePath()}")
+        log(ErrorLabel, "Could not find an EiBi schedule in #{storagePath()}")
     else
-        logWithLabel(InfoLabel, "Loaded #{$schedule.count} schedule entries")
+        log(InfoLabel, "Loaded #{$schedule.count} schedule entries")
     end
     return loaded
 end
@@ -1253,7 +1249,7 @@ kHz:75;Time(UTC):93;Days:59;ITU:49;Station:201;Lng:49;Target:62;Remarks:135;P:35
 $parserLine = 0
 def parseEiBiTextLine(line)    
     $parserLine += 1
-    logWithLabel(DebugDebugLabel, "parser line #{$parserLine}")
+    log(DebugDebugLabel, "parser line #{$parserLine}")
     fields = line.split(';')
     save = true
     bc = BroadcastEntry::new
@@ -1261,7 +1257,7 @@ def parseEiBiTextLine(line)
     frequency = fields[0].to_i
     if frequency < 1711 || frequency > 30000
         save = false
-        logWithLabel(DebugDebugLabel, "Disregarding entry for #{frequency} kHz")
+        log(DebugDebugLabel, "Disregarding entry for #{frequency} kHz")
     else
         bc[:frequency] = frequency
     end
@@ -1269,7 +1265,7 @@ def parseEiBiTextLine(line)
     inactive = fields[8].eql?("8")
     bc[:inactive] = inactive
     if inactive
-        logWithLabel(DebugDebugLabel, "inactive: #{line}")
+        log(DebugDebugLabel, "inactive: #{line}")
     end
 
     # hhmm-hhmm -- note that this block could be omitted for inactives
@@ -1291,7 +1287,7 @@ def parseEiBiTextLine(line)
     # ignoring the start/stop date fields
 
     if save
-        logWithLabel(DebugDebugLabel, "bc = #{bc}")
+        log(DebugDebugLabel, "bc = #{bc}")
     else
         bc = nil
     end
@@ -1308,7 +1304,7 @@ def main
         doubleDebug()
         showMatchingScheduleData()
     else
-        logWithLabel(ErrorLabel, "Could not load EiBi schedule")
+        log(ErrorLabel, "Could not load EiBi schedule")
     end
 end
 
