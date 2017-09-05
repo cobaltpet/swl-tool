@@ -939,6 +939,7 @@ end
 # BUG: this is a large method that should be broken up
 def daysString(bc)
     result = nil
+    returnInput = false
 
     inactive = bc[:inactive]
     if inactive
@@ -994,14 +995,14 @@ def daysString(bc)
                 markDay(data, days)
             # search for day-of-week digit list e.g. 2356
             elsif (/^[1-7]+$/ =~ data) != nil
-                # BUG: inefficient implementation
                 #logWithLabel(DebugLabel, "chopping digits #{data}")
                 data.split("").each do |digit|
                     markDay(digit.to_i, days)
                 end
             elsif (/^+-.+$/ =~ data) != nil
-                {}
+                returnInput = true
             else
+                returnInput = true
                 case data
                 # for now, don't interpret these known cases
                 when "Ram", "Haj", "HBF", "Xmas", "sum", "win", "alt", "irr", "tent", "plan", "Tests"
@@ -1014,6 +1015,11 @@ def daysString(bc)
             result = days.join
         end # if data != nil && data.length > 0
     end # if inactive
+
+    if returnInput
+        result = bc[:days]
+        result += "." while result.length < 7
+    end
     return result
 end
 
