@@ -1076,11 +1076,14 @@ def storagePath
     return Dir.home + "/.swl-tool/"
 end
 
-def createDirectoryIfNeeded
-    storagePath = storagePath()
-    unless Dir.exist?(storagePath)
-        log(InfoLabel, "Creating directory for files: #{storagePath}")
-        Dir.mkdir(storagePath, 0700)
+def storagePathSubdirectory(subdir)
+    return storagePath() + subdir + "/"
+end
+
+def createDirectoryIfNeeded(path)
+    unless Dir.exist?(path)
+        log(InfoLabel, "Creating directory for files: #{path}")
+        Dir.mkdir(path, 0700)
         # BUG: unhandled SystemCallError
     end
 end
@@ -1301,7 +1304,11 @@ end
 
 def main
     parseCommandLineOptions()
-    createDirectoryIfNeeded()
+    createDirectoryIfNeeded(storagePath())
+
+    eibiParser = EiBiScheduleParser.new
+    eibiParser.localFilePath = storagePathSubdirectory("eibi")
+    createDirectoryIfNeeded(eibiParser.localFilePath)
     if fetchAndLoadEiBiSchedule()
         selfishStats()
         doubleDebug()
