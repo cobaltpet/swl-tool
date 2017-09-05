@@ -1221,7 +1221,8 @@ def parseEiBiSchedule(scheduleCode)
         File.open(schedulePath, "rb:iso-8859-1").each_line do |line|
             if firstLineSkipped
                 # parse into BroadcastEntry elements
-                parseEiBiTextLine(line.chomp)
+                bce = parseEiBiTextLine(line.chomp)
+                $schedule.push(bce) unless nil == bce
             else
                 firstLineSkipped = true
             end
@@ -1284,9 +1285,11 @@ def parseEiBiTextLine(line)
     # ignoring the start/stop date fields
 
     if save
-        $schedule.push(bc)
         logWithLabel(DebugDebugLabel, "bc = #{bc}")
+    else
+        bc = nil
     end
+    return bc
 end
 
 ### Main
