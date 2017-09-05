@@ -11,6 +11,7 @@ class EiBiScheduleParser < ScheduleParser
     def broadcastEntryRecordsForScheduleCode(scheduleCode)
         loaded = false
         available = false
+        records = Array.new
 
         # BUG: note that schedule code handling logic must be relocated to the main script as this class doesn't know about $options
 
@@ -43,11 +44,8 @@ class EiBiScheduleParser < ScheduleParser
                 break
             end
         end
-        if available
-            loaded = parseEiBiSchedule(scheduleCode)
-        else
-        end
-        return loaded
+        records = parseEiBiSchedule(scheduleCode) if available
+        return records
     end
 
     ### Internal
@@ -504,41 +502,33 @@ HBF
         return success
     end
 
-end # class
-
-# filenameForEiBiSchedule (1203)
-# urlForEiBiSchedule (1208)
-# parseEiBiSchedule (1219)
-# parseEiBiTextLine (1253)
-# doesBroadcastMatchRegionFilter (550-ish)
-
-
-def parseEiBiSchedule(scheduleCode)
-    loaded = false
-    schedulePath = storagePath() + filenameForEiBiSchedule(scheduleCode)
-    if File.exist?(schedulePath)
-        log(DebugLabel, "parsing #{schedulePath}")
-        # open the file
-        firstLineSkipped = false
-        File.open(schedulePath, "rb:iso-8859-1").each_line do |line|
-            if firstLineSkipped
-                # parse into BroadcastEntry elements
-                bce = parseEiBiTextLine(line.chomp)
-                $schedule.push(bce) unless nil == bce
-            else
-                firstLineSkipped = true
+    def parseEiBiSchedule(scheduleCode)
+        loaded = false
+        records = Array.new
+        schedulePath = storagePath() + filenameForEiBiSchedule(scheduleCode)
+        if File.exist?(schedulePath)
+            log(DebugLabel, "parsing #{schedulePath}")
+            # open the file
+            firstLineSkipped = false
+            File.open(schedulePath, "rb:iso-8859-1").each_line do |line|
+                if firstLineSkipped
+                    # parse into BroadcastEntry elements
+                    bce = parseEiBiTextLine(line.chomp)
+                    records.push(bce) unless nil == bce
+                else
+                    firstLineSkipped = true
+                end
             end
+            # the file has been processed although this is no guarantee of valid schedule data
+            loaded = true
         end
-        # the file has been processed although this is no guarantee of valid schedule data
-        loaded = true
+        unless loaded
+            log(ErrorLabel, "Could not find an EiBi schedule in #{storagePath()}")
+        else
+            log(InfoLabel, "Loaded #{records.count} schedule entries")
+        end
+        return records
     end
-    unless loaded
-        log(ErrorLabel, "Could not find an EiBi schedule in #{storagePath()}")
-    else
-        log(InfoLabel, "Loaded #{$schedule.count} schedule entries")
-    end
-    return loaded
-end
 
 # first two lines of an example EiBi csv file
 =begin
@@ -546,50 +536,55 @@ kHz:75;Time(UTC):93;Days:59;ITU:49;Station:201;Lng:49;Target:62;Remarks:135;P:35
 16.4;0000-2400;;NOR;JXN Marine Norway;;NEu;no;1;;
 =end
 
-$parserLine = 0
-def parseEiBiTextLine(line)    
-    $parserLine += 1
-    log(DebugDebugLabel, "parser line #{$parserLine}")
-    fields = line.split(';')
-    save = true
-    bc = BroadcastEntry::new
+    parserLine = 0
+    def parseEiBiTextLine(line)    
+        parserLine += 1
+        log(DebugDebugLabel, "parser line #{parserLine}")
+        fields = line.split(';')
+        save = true
+        bc = BroadcastEntry::new
 
-    frequency = fields[0].to_i
-    if frequency < 1711 || frequency > 30000
-        save = false
-        log(DebugDebugLabel, "Disregarding entry for #{frequency} kHz")
-    else
-        bc[:frequency] = frequency
+        frequency = fields[0].to_i
+        if frequency < 1711 || frequency > 30000
+            save = false
+            log(DebugDebugLabel, "Disregarding entry for #{frequency} kHz")
+        else
+            bc[:frequency] = frequency
+        end
+
+        inactive = fields[8].eql?("8")
+        bc[:inactive] = inactive
+        if inactive
+            log(DebugDebugLabel, "inactive: #{line}")
+        end
+
+        # hhmm-hhmm -- note that this block could be omitted for inactives
+        bc[:startHour] = fields[1][0,2].to_i
+        bc[:startMinute] = fields[1][2,2].to_i
+        bc[:endHour] = fields[1][5,2].to_i
+        bc[:endMinute] = fields[1][7,2].to_i
+
+        unless inactive
+            bc[:days] = fields[2]
+        end
+
+        bc[:origin] = fields[3]
+        bc[:broadcaster] = fields[4]
+
+        # parse languages
+        languages = fields[5]
+        bc[:languages] = languagesFromString(languages)
+
+        bc[:targetRegion] = fields[6]
+        # ignoring the EiBi "Remarks"/Transmitter field
+        # ignoring the EiBi "Persistence" field
+        # ignoring the start/stop date fields
+
+        if save
+            log(DebugDebugLabel, "bc = #{bc}")
+        else
+            bc = nil
+        end
+        return bc
     end
-
-    inactive = fields[8].eql?("8")
-    bc[:inactive] = inactive
-    if inactive
-        log(DebugDebugLabel, "inactive: #{line}")
-    end
-
-    # hhmm-hhmm -- note that this block could be omitted for inactives
-    bc[:startHour] = fields[1][0,2].to_i
-    bc[:startMinute] = fields[1][2,2].to_i
-    bc[:endHour] = fields[1][5,2].to_i
-    bc[:endMinute] = fields[1][7,2].to_i
-
-    unless inactive
-        bc[:days] = fields[2]
-    end
-
-    bc[:origin] = fields[3]
-    bc[:broadcaster] = fields[4]
-    bc[:languages] = fields[5]
-    bc[:targetRegion] = fields[6]
-    # ignoring the EiBi "Remarks"/Transmitter field
-    # ignoring the EiBi "Persistence" field
-    # ignoring the start/stop date fields
-
-    if save
-        log(DebugDebugLabel, "bc = #{bc}")
-    else
-        bc = nil
-    end
-    return bc
-end
+end # class
