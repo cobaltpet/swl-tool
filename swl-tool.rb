@@ -9,6 +9,9 @@
 require 'net/http'
 require 'uri'
 
+require_relative '_ScheduleParser'
+require_relative '_EiBiScheduleParser'
+
 # TODO: incorporate Aoki http://www.geocities.jp/binewsjp/
 # TODO: incorporate hfcc.org?
 # TODO: add ionosphere day/night filters -id -in to prefer compatible frequencies -- determine the cutoff? 11MHz?
