@@ -3,6 +3,7 @@
 # _EiBiScheduleParser.rb -- EiBiScheduleParser class for swl-tool
 # Refer to swl-tool.rb for author info, software license, and script version
 
+require_relative '_Common'
 require_relative '_BroadcastEntry'
 require_relative '_ScheduleParser'
 
