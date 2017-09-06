@@ -449,7 +449,7 @@ HBF
         # look for file locally
         # if missing, or if present and more than a week old, then fetch
 
-        expectedFile = storagePath + filenameForEiBiSchedule(scheduleCode)
+        expectedFile = @localFilePath + filenameForEiBiSchedule(scheduleCode)
         if File.exist?(expectedFile)
             mtime = File::new(expectedFile).mtime
             if mtime < (Time::now - 60*60*24*7)
@@ -494,7 +494,7 @@ HBF
             when 200..299
                 success = true
                 if response.class.body_permitted?
-                    File.open(storagePath() + filename, "w") { |f|
+                    File.open(@localFilePath + filename, "w") { |f|
                         f.write(response.body)
                         f.flush()
                     }
@@ -515,7 +515,7 @@ HBF
     def parseEiBiSchedule(scheduleCode)
         loaded = false
         records = Array.new
-        schedulePath = storagePath() + filenameForEiBiSchedule(scheduleCode)
+        schedulePath = @localFilePath + filenameForEiBiSchedule(scheduleCode)
         if File.exist?(schedulePath)
             log(DebugLabel, "parsing #{schedulePath}")
             # open the file
@@ -533,7 +533,7 @@ HBF
             loaded = true
         end
         unless loaded
-            log(ErrorLabel, "Could not find an EiBi schedule in #{storagePath()}")
+            log(ErrorLabel, "Could not find an EiBi schedule in #{@localFilePath}")
         else
             log(InfoLabel, "Loaded #{records.count} schedule entries")
         end
