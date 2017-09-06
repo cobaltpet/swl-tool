@@ -10,6 +10,7 @@ require_relative '_Common'
 require_relative '_BroadcastEntry'
 require_relative '_ScheduleParser'
 require_relative '_EiBiScheduleParser'
+require_relative '_Filter'
 
 # TODO: incorporate Aoki http://www.geocities.jp/binewsjp/
 # TODO: incorporate hfcc.org?
@@ -419,221 +420,18 @@ end
 
 ### Schedule display
 
-# shortwave broadcast band reference: https://en.wikipedia.org/wiki/Shortwave_bands#International_broadcast_bands
-def doesFrequencyMatchMeterBand(freq)
-    result = true
-    if $options.keys.include?(MeterBandOptionKey)
-        mb = $options[MeterBandOptionKey]
-        tolerance = nil
-        if $options.keys.include?(MeterBandToleranceOptionKey)
-            tolerance = $options[MeterBandToleranceOptionKey]
-        else
-            tolerance = 0
-        end
-
-        result = false
-        unless [120, 90, 75, 60, 49, 41, 31, 25, 22, 19, 16, 15, 13, 11].include?(mb)
-            log(ErrorLabel, "The specified value #{mb} is not a recognized broadcasting meter band [120, 90, 75, 60, 49, 41, 31, 25, 22, 19, 16, 15, 13, 11]")
-        else
-            log(DebugLabel, "#{freq} in #{mb}m?")
-            case mb
-            when 120
-                result = ((2300-tolerance)..(2495+tolerance)).include?(freq)
-            when 90
-                result = ((3200-tolerance)..(3400+tolerance)).include?(freq)
-            when 75
-                result = ((3900-tolerance)..(4000+tolerance)).include?(freq)
-            when 60
-                result = ((4750-tolerance)..(5060+tolerance)).include?(freq)
-            when 49
-                result = ((5800-tolerance)..(6200+tolerance)).include?(freq)
-            when 41
-                result = ((7200-tolerance)..(7450+tolerance)).include?(freq)
-            when 31
-                result = ((9400-tolerance)..(9900+tolerance)).include?(freq)
-            when 25
-                result = ((11600-tolerance)..(12100+tolerance)).include?(freq)
-            when 22
-                result = ((13570-tolerance)..(13870+tolerance)).include?(freq)
-            when 19
-                result = ((15100-tolerance)..(15830+tolerance)).include?(freq)
-            when 16
-                result = ((17480-tolerance)..(17900+tolerance)).include?(freq)
-            when 15
-                result = ((18900-tolerance)..(19020+tolerance)).include?(freq)
-            when 13
-                result = ((21450-tolerance)..(21850+tolerance)).include?(freq)
-            when 11
-                result = ((25600-tolerance)..(26100+tolerance)).include?(freq)
-            end
-        end
-    end # if MeterBandOptionKey
-    return result
-end
-
-def doesBroadcastMatchBroadcasterFilter(bc)
-    match = true
-    broadcaster = bc[:broadcaster]
-    if broadcaster != nil
-        requiredBroadcaster = $options[BroadcasterOptionKey]
-        if requiredBroadcaster != nil
-            unless broadcaster.include?(requiredBroadcaster)
-                match = false
-            end
-        end
-    end
-    return match
-end
-
-def doesBroadcastMatchBroadcastFlagsFilter(bc)
-    match = nil
-    requiredFlags = $options[BroadcastFlagsOptionKey]
-
-    if nil == requiredFlags
-        match = true
-    else
-        flags = bc[:flags]
-        flags = "" if nil == flags
-        log(DebugLabel, "flags.include?(requiredFlags) / (#{flags}) / (#{requiredFlags})")
-        match = flags.include?(requiredFlags)
-    end
-    
-    return match
-end
-
-def doesBroadcastMatchFrequencyFilter(bc)
-    match = nil
-    if $options.keys.include?(FrequencyOptionKey)
-        frequency = bc[:frequency]
-        requiredFrequency = $options[FrequencyOptionKey]
-        frequencyTolerance = $options[FrequencyToleranceOptionKey]
-        if frequencyTolerance != nil
-            if frequencyTolerance > 0
-                match = (requiredFrequency-frequencyTolerance..requiredFrequency+frequencyTolerance).include?(frequency)
-            end
-        else
-            match = (frequency == requiredFrequency)
-        end
-    else
-        match = true
-    end # if FrequencyOptionKey
-    return match
-end
-
-def doesBroadcastMatchLanguageFilter(bc)
-    match = true
-    languages = bc[:languages].split(',')
-    requiredLanguage = $options[LanguageOptionKey]
-    if requiredLanguage != nil
-        found = false
-        for l in languages
-            if l.eql?(requiredLanguage)
-                found = true
-                break
-            end
-        end
-        match = found
-    end
-    return match
-end
-
-def doesBroadcastMatchMeterBandFilter(bc)
-    match = doesFrequencyMatchMeterBand(bc[:frequency])
-    return match
-end
-
-# When specified region is generic (e.g. Eu instead of WEu), incorporate all of its sub-regions
-def doesBroadcastMatchRegionFilter(bc)
-    match = true
-    region = bc[:targetRegion]
-    requiredRegion = $options[RegionOptionKey]
-    unless requiredRegion == nil
-        case requiredRegion
-        when "NAm"
-            match = ["NAm", "WNA", "ENA", "CNA", "Am", "USA"].include?(region)
-        when "CAm"
-            match = ["CAm", "Car", "LAm"].include?(region)
-        when "SAm"
-            match = ["SAm", "LAm"].include?(region)
-        when "Eu"
-            match = ["NEu", "WEu", "SEu", "EEu", "CEu", "SEE", "Eu"].include?(region)
-        when "Af"
-            match = ["NAf", "WAf", "SAf", "EAf", "CAf", "Af", "WIO"].include?(region)
-        when "As"
-            match = ["SAs", "CAs", "As", "SEA", "FE", "Tib"].include?(region)
-        when "Oc"
-            match = ["NOc", "WOc", "SOc", "EOc", "Oc"].include?(region)
-        end
-    end
-    return match
-end
-
-# this value will either be the default of now in UTC (same as -ta option), or a user-specified UTC time
-def filterMinutes
-    filterHour = $options[HourOptionKey].to_i
-    filterMinute = $options[MinuteOptionKey].to_i
-    return (filterHour * 60) + filterMinute
-end
-
-# Test cases: 
-# - end time is less than start time (broadcast wraps around 0000 UTC)
-# - filtering time is near 0000 UTC (and we need to check for broadcasts back to 2330 UTC
-def doesBroadcastMatchTimeFilter(bc)
-    match = nil
-    if $options.keys.include?(HourOptionKey) && $options.keys.include?(MinuteOptionKey)
-        toleranceMinutes = 30
-        # convert start time, end time, and current time to minutes offset from 0000 UTC for easy comparison
-        broadcastStartMinutes = ((bc[:startHour] * 60) + bc[:startMinute]) - toleranceMinutes
-        broadcastEndMinutes = ((bc[:endHour] * 60) + bc[:endMinute]) + toleranceMinutes
-        if broadcastEndMinutes < broadcastStartMinutes
-            # the broadcast wraps around 0000 UTC
-        end
-        if (broadcastStartMinutes <= filterMinutes()) && (broadcastEndMinutes >= filterMinutes())
-            match = true
-        else
-            match = false
-        end
-    else # if HourOptionKey && MinuteOptionKey
-        match = true
-    end
-    return match
-end
-
-def timeStringFromHoursAndMinutes(hours, minutes)
-    hourString = hours.to_s
-    if hourString.length < 2
-        hourString = "0" + hourString
-    end
-    minuteString = minutes.to_s
-    if minuteString.length < 2
-        minuteString = "0" + minuteString
-    end
-    return hourString + minuteString
-end
-
-def doesBroadcastMatchInactiveFilter(bc)
-    match = true
-    if bc[:inactive]
-        displayInactive = $options[InactiveDisplayOptionKey]
-        if (nil == displayInactive) || (false == displayInactive)
-            match = false
-        end
-    end
-    return match
-end
-
 def showMatchingScheduleData
     # filters: broadcaster, frequency, language, meterband, region, time
     for bc in $schedule
         # This boolean chain will stop executing once false
-        if doesBroadcastMatchFrequencyFilter(bc) &&
-           doesBroadcastMatchLanguageFilter(bc) &&
-           doesBroadcastMatchBroadcasterFilter(bc) &&
-           doesBroadcastMatchBroadcastFlagsFilter(bc) &&
-           doesBroadcastMatchMeterBandFilter(bc) &&
-           doesBroadcastMatchRegionFilter(bc) &&
-           doesBroadcastMatchTimeFilter(bc) &&
-           doesBroadcastMatchInactiveFilter(bc)
+        if doesBroadcastMatchFrequencyFilter(bc, $options[FrequencyOptionKey], $options[FrequencyToleranceOptionKey]) &&
+           doesBroadcastMatchLanguageFilter(bc, $options[LanguageOptionKey]) &&
+           doesBroadcastMatchBroadcasterFilter(bc, $options[BroadcasterOptionKey]) &&
+           doesBroadcastMatchBroadcastFlagsFilter(bc, $options[BroadcastFlagsOptionKey]) &&
+           doesBroadcastMatchMeterBandFilter(bc, $options[MeterBandOptionKey], $options[MeterBandToleranceOptionKey]) &&
+           doesBroadcastMatchRegionFilter(bc, $options[RegionOptionKey]) &&
+           doesBroadcastMatchTimeFilter(bc, $options[HourOptionKey], $options[MinuteOptionKey]) &&
+           doesBroadcastMatchInactiveFilter(bc, $options[InactiveDisplayOptionKey])
 
             # convert frequency into 5-char string
             freqString = bc[:frequency].to_s
