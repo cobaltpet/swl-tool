@@ -44,23 +44,6 @@ ScriptVersion = "2017-09-06 1907UTC"
 
 ### Options
 
-$options = Hash::new
-
-DebugOptionKey = "debugOpt"                           # boolean
-DebugDebugOptionKey = "debugDebugOpt"                 # boolean
-BroadcasterOptionKey = "broadcasterOpt"               # string
-BroadcastFlagsOptionKey = "broadcastFlagsOpt"         # string
-FrequencyOptionKey = "frequencyOpt"                   # integer
-FrequencyToleranceOptionKey = "frequencyToleranceOpt" # integer
-LanguageOptionKey = "languageOpt"                     # string
-RegionOptionKey = "regionOpt"                         # string
-MeterBandOptionKey = "meterOpt"                       # integer
-MeterBandToleranceOptionKey = "meterToleranceOpt"     # integer
-ScheduleOptionKey = "scheduleOpt"                     # string
-HourOptionKey = "hourOpt"                             # integer
-MinuteOptionKey = "minuteOpt"                         # integer
-InactiveDisplayOptionKey = "inactiveOpt"              # boolean
-
 def setDefaultOptions
     # note that debug logging is not possible in this method
     # disable debug mode
@@ -325,7 +308,7 @@ end
 def doubleDebug
     if $options[DebugDebugOptionKey] == true
         debugBroadcasters()
-        debugLanguages()
+        #debugLanguages() # BUG: disabled due to languages work in progress
         debugRegions()
         debugDays()
     end
@@ -377,6 +360,7 @@ end
 
 def debugDays
     daysHash = Hash::new
+    log(DebugLabel, "schedule count for debugdays: #{$schedule.count}")
     for bc in $schedule
         days = bc[:days]
         unless days == nil

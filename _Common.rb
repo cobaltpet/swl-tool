@@ -3,6 +3,25 @@
 # _Common.rb -- Common code and resources for swl-tool
 # Refer to swl-tool.rb for author info, software license, and script version
 
+### Options
+
+$options = Hash::new
+
+DebugOptionKey = "debugOpt"                           # boolean
+DebugDebugOptionKey = "debugDebugOpt"                 # boolean
+BroadcasterOptionKey = "broadcasterOpt"               # string
+BroadcastFlagsOptionKey = "broadcastFlagsOpt"         # string
+FrequencyOptionKey = "frequencyOpt"                   # integer
+FrequencyToleranceOptionKey = "frequencyToleranceOpt" # integer
+LanguageOptionKey = "languageOpt"                     # string
+RegionOptionKey = "regionOpt"                         # string
+MeterBandOptionKey = "meterOpt"                       # integer
+MeterBandToleranceOptionKey = "meterToleranceOpt"     # integer
+ScheduleOptionKey = "scheduleOpt"                     # string
+HourOptionKey = "hourOpt"                             # integer
+MinuteOptionKey = "minuteOpt"                         # integer
+InactiveDisplayOptionKey = "inactiveOpt"              # boolean
+
 ### Logging
 
 InfoLabel = "info"
