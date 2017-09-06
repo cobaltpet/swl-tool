@@ -275,7 +275,6 @@ class EiBiScheduleParser < ScheduleParser
 
     ### Internal
 
-
     def languagesFromString(string)
         langs = []
         codes = string.split(',')
@@ -340,6 +339,8 @@ HBF
             days[6] = "S"
         when 7, "Su"
             days[0] = "S"
+        else
+            log(ErrorLabel, "Bad day value for markDay: #{day}")
         end
     end
 
@@ -357,7 +358,7 @@ HBF
             data = bc[:days]
             if (data != nil) && (data.length > 0)
                 days = Array.new(7, ".") # note that this is a zero-based array but the data is one-based
-                twoCharDays = "(Mo|Tu|We|Th|Fr|Sa|Su)"
+                twoCharDays = "(Su|Mo|Tu|We|Th|Fr|Sa)"
 
                 # search for hyphenated weekday range e.g. Mo-Fr
                 if (/^#{twoCharDays}-#{twoCharDays}$/ =~ data) != nil
@@ -365,7 +366,7 @@ HBF
                     first = data[0,2]
                     second = data[3,2]
 
-                    daysArray = ["Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"]
+                    daysArray = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"]
                     unless daysArray.include?(first) && daysArray.include?(second)
                         log(DebugLabel, "Error parsing hyphenated day range! #{data}")
                     else
@@ -414,8 +415,7 @@ HBF
                     case data
                     # for now, don't interpret these known cases
                     when "Ram", "Haj", "HBF", "Xmas", "sum", "win", "alt", "irr", "tent", "plan", "Tests"
-                        # BUG: this implementation results in data loss. original string could be displayed
-                        days[0] = "*" # the indicator for an unparsed day value
+                        {}
                     else
                         log(DebugLabel, "Unparsed day string: #{data}")
                     end
@@ -552,6 +552,14 @@ HBF
         log(DebugLabel, "flags = #{flags}")
     end
 
+    def countCharactersInString(char, str)
+        count = 0
+        str.split("").each do |c|
+            count += 1 if c.eql?(char)
+        end
+        return count
+    end
+
 # first two lines of an example EiBi csv file
 =begin
 kHz:75;Time(UTC):93;Days:59;ITU:49;Station:201;Lng:49;Target:62;Remarks:135;P:35;Start:60;Stop:60;
@@ -561,50 +569,57 @@ kHz:75;Time(UTC):93;Days:59;ITU:49;Station:201;Lng:49;Target:62;Remarks:135;P:35
     def parseEiBiTextLine(line)    
         @parserLine += 1
         log(DebugDebugLabel, "parser line #{@parserLine}")
-        fields = line.split(';')
-        save = true
-        bc = BroadcastEntry::new
-
-        frequency = fields[0].to_i
-        if frequency < 1711 || frequency > 30000
-            save = false
-            log(DebugDebugLabel, "Disregarding entry for #{frequency} kHz")
-        else
-            bc[:frequency] = frequency
+        validEntry = true
+        if countCharactersInString(";", line) != 10
+            log(DebugLabel, "Wrong semicolon count; line ignored")
+            validEntry = false
         end
 
-        inactive = fields[8].eql?("8")
-        bc[:inactive] = inactive
-        if inactive
-            log(DebugDebugLabel, "inactive: #{line}")
-        end
+        if validEntry
+            fields = line.split(';')
+            bc = BroadcastEntry::new
 
-        # hhmm-hhmm -- note that this block could be omitted for inactives
-        bc[:startHour] = fields[1][0,2].to_i
-        bc[:startMinute] = fields[1][2,2].to_i
-        bc[:endHour] = fields[1][5,2].to_i
-        bc[:endMinute] = fields[1][7,2].to_i
+            frequency = fields[0].to_i
+            if frequency < 1711 || frequency > 30000
+                validEntry = false
+                log(DebugDebugLabel, "Disregarding entry for #{frequency} kHz")
+            else
+                bc[:frequency] = frequency
+            end
 
-        unless inactive
-            bc[:days] = fields[2]
-            bc[:daysPrintable] = daysStringForRecord(bc)
-        end
+            inactive = fields[8].eql?("8")
+            bc[:inactive] = inactive
+            if inactive
+                log(DebugDebugLabel, "inactive: #{line}")
+            end
 
-        bc[:origin] = fields[3]
-        bc[:broadcaster] = fields[4]
-        appendFlag(bc, BroadcastFlagDigital) if fields[4].include?("DIGITAL")
+            # hhmm-hhmm -- note that this block could be omitted for inactives
+            bc[:startHour] = fields[1][0,2].to_i
+            bc[:startMinute] = fields[1][2,2].to_i
+            bc[:endHour] = fields[1][5,2].to_i
+            bc[:endMinute] = fields[1][7,2].to_i
 
-        # parse languages
-        languages = fields[5]
-        bc[:languages] = languagesFromString(languages)
-        appendFlag(bc, BroadcastFlagTime) if languages.eql?("-TS")
+            unless inactive
+                bc[:days] = fields[2]
+                bc[:daysPrintable] = daysStringForRecord(bc)
+            end
 
-        bc[:targetRegion] = fields[6]
-        # ignoring the EiBi "Remarks"/Transmitter field
-        # ignoring the EiBi "Persistence" field
-        # ignoring the start/stop date fields
+            bc[:origin] = fields[3]
+            bc[:broadcaster] = fields[4]
+            appendFlag(bc, BroadcastFlagDigital) if fields[4].include?("DIGITAL")
 
-        if save
+            # parse languages
+            languages = fields[5]
+            bc[:languages] = languagesFromString(languages)
+            appendFlag(bc, BroadcastFlagTime) if languages.eql?("-TS")
+
+            bc[:targetRegion] = fields[6]
+            # ignoring the EiBi "Remarks"/Transmitter field
+            # ignoring the EiBi "Persistence" field
+            # ignoring the start/stop date fields
+        end # if validEntry
+
+        if validEntry
             log(DebugDebugLabel, "bc = #{bc}")
         else
             bc = nil
