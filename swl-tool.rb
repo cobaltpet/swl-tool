@@ -6,9 +6,6 @@
 # Developed in a secret location in Northern California
 # Env: ruby 2.4.1p111 (2017-03-22 revision 58053) [x86_64-darwin16]
 
-require 'net/http'
-require 'uri'
-
 require_relative '_Common'
 require_relative '_BroadcastEntry'
 require_relative '_ScheduleParser'
@@ -53,6 +50,7 @@ $options = Hash::new
 DebugOptionKey = "debugOpt"                           # boolean
 DebugDebugOptionKey = "debugDebugOpt"                 # boolean
 BroadcasterOptionKey = "broadcasterOpt"               # string
+BroadcastFlagsOptionKey = "broadcastFlagsOpt"         # string
 FrequencyOptionKey = "frequencyOpt"                   # integer
 FrequencyToleranceOptionKey = "frequencyToleranceOpt" # integer
 LanguageOptionKey = "languageOpt"                     # string
@@ -156,7 +154,7 @@ def parseCommandLineOptions
         when "-bt"
             # this is described as a broadcaster option but we are searching for a specific language code
             # the options -b and -bt may be used together since they write into distinct option keys
-            $options[LanguageOptionKey] = "-TS"
+            $options[BroadcastFlagsOptionKey] = BroadcastFlagTime
             removeTimeKeys = true
         when "-f"
             requireParameterForOption(opt, options)
@@ -500,6 +498,22 @@ def doesBroadcastMatchBroadcasterFilter(bc)
     return match
 end
 
+def doesBroadcastMatchBroadcastFlagsFilter(bc)
+    match = nil
+    requiredFlags = $options[BroadcastFlagsOptionKey]
+
+    if nil == requiredFlags
+        match = true
+    else
+        flags = bc[:flags]
+        flags = "" if nil == flags
+        log(DebugLabel, "flags.include?(requiredFlags) / (#{flags}) / (#{requiredFlags})")
+        match = flags.include?(requiredFlags)
+    end
+    
+    return match
+end
+
 def doesBroadcastMatchFrequencyFilter(bc)
     match = nil
     if $options.keys.include?(FrequencyOptionKey)
@@ -628,6 +642,7 @@ def showMatchingScheduleData
         if doesBroadcastMatchFrequencyFilter(bc) &&
            doesBroadcastMatchLanguageFilter(bc) &&
            doesBroadcastMatchBroadcasterFilter(bc) &&
+           doesBroadcastMatchBroadcastFlagsFilter(bc) &&
            doesBroadcastMatchMeterBandFilter(bc) &&
            doesBroadcastMatchRegionFilter(bc) &&
            doesBroadcastMatchTimeFilter(bc) &&

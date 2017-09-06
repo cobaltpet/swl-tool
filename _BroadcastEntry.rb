@@ -15,9 +15,21 @@
 # endMinute:     integer
 # days:          string
 # daysPrintable: string
-# type:          string ### not yet used
-# contents:      string ### not yet used
 # inactive:      boolean
-BroadcastEntry = Struct::new(:frequency, :broadcaster, :origin, :targetRegion, :languages, :startHour, :startMinute, :endHour, :endMinute, :days, :daysPrintable, :type, :contents, :inactive)
-# broadcast type: a=analog, d=digital, f=fax, m=morse, n=numbers, t=time, v=volmet, x=navtex, w=weather
-# broadcast contents: m=music, n=news, r=religion, w=weather, 
+# flags:         string
+
+BroadcastEntry = Struct::new(:frequency, :broadcaster, :origin, :targetRegion, :languages, :startHour, :startMinute, :endHour, :endMinute, :days, :daysPrintable, :inactive, :flags)
+
+# Values within the 'flags' field:
+BroadcastFlagAnalog =    "a"
+BroadcastFlagDigital =   "d"
+BroadcastFlagNumbers =   "e"
+BroadcastFlagFax =       "f"
+BroadcastFlagMusic =     "m"
+BroadcastFlagNews =      "n"
+BroadcastFlagMorse =     "o"
+BroadcastFlagReligious = "r"
+BroadcastFlagTime =      "t"
+BroadcastFlagVolmet =    "v"
+BroadcastFlagWeather =   "w"
+BroadcastFlagNavtex =    "x"

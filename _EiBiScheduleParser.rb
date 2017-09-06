@@ -3,6 +3,9 @@
 # _EiBiScheduleParser.rb -- EiBiScheduleParser class for swl-tool
 # Refer to swl-tool.rb for author info, software license, and script version
 
+require 'net/http'
+require 'uri'
+
 require_relative '_Common'
 require_relative '_BroadcastEntry'
 require_relative '_ScheduleParser'
@@ -541,6 +544,14 @@ HBF
         return records
     end
 
+    def appendFlag(broadcast, newflag)
+        flags = broadcast[:flags]
+        flags = "" if nil == flags
+        flags << newflag unless flags.include?(newflag)
+        broadcast[:flags] = flags
+        log(DebugLabel, "flags = #{flags}")
+    end
+
 # first two lines of an example EiBi csv file
 =begin
 kHz:75;Time(UTC):93;Days:59;ITU:49;Station:201;Lng:49;Target:62;Remarks:135;P:35;Start:60;Stop:60;
@@ -581,10 +592,12 @@ kHz:75;Time(UTC):93;Days:59;ITU:49;Station:201;Lng:49;Target:62;Remarks:135;P:35
 
         bc[:origin] = fields[3]
         bc[:broadcaster] = fields[4]
+        appendFlag(bc, BroadcastFlagDigital) if fields[4].include?("DIGITAL")
 
         # parse languages
         languages = fields[5]
         bc[:languages] = languagesFromString(languages)
+        appendFlag(bc, BroadcastFlagTime) if languages.eql?("-TS")
 
         bc[:targetRegion] = fields[6]
         # ignoring the EiBi "Remarks"/Transmitter field
