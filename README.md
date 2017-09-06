@@ -34,6 +34,9 @@ Usage
 Example output
 ==============
 
+    $ echo "time = now; language = english; region = north america; meter band = 49"
+    time = now; language = english; region = north america; meter band = 49
+
     $ ./swl-tool.rb -tn -le -rna -m 49  
     swl-tool.rb version 2017-09-04 0054UTC by Eric Weatherall : cobaltpetxxxxxxxcom : http://cobaltpet.blogspot.com/  
     credit: Shortwave broadcast schedule data from EiBi  
