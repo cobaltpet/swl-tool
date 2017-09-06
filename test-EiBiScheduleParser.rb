@@ -1,5 +1,8 @@
 #!/usr/local/bin/ruby -w
 
+# test-EiBiScheduleParser.rb -- Test cases for EiBiScheduleParser class for swl-tool
+# Refer to swl-tool.rb for author info, software license, and script version
+
 require 'test/unit'
 require 'securerandom'
 
