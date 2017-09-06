@@ -6,6 +6,9 @@
 require_relative '_BroadcastEntry'
 require_relative '_ScheduleParser'
 
+# Note that a06 is the oldest csv available
+# Note that b15 is currently the newest csv in the /archive path
+
 class EiBiScheduleParser < ScheduleParser
     ### Initialize
 
@@ -226,11 +229,8 @@ class EiBiScheduleParser < ScheduleParser
     ### Superclass overrides
 
     def broadcastEntryRecordsForScheduleCode(scheduleCode)
-        loaded = false
-        available = false
-        records = Array.new
-
-        # BUG: note that schedule code handling logic must be relocated to the main script as this class doesn't know about $options
+        scheduleCodeYear = scheduleCode[1,2].to_i
+        log(ErrorLabel, "Schedule code #{scheduleCodes[0]} is less than the minimum a06 available in EiBi CSV") if scheduleCodeYear < 6
 
         scheduleCodes = nil
         # first check if the user is overriding the automatic schedule fetch with a specific schedule code
@@ -245,6 +245,10 @@ class EiBiScheduleParser < ScheduleParser
             # otherwise use the current and previous schedule codes
             scheduleCodes = [currentScheduleCode(), previousScheduleCode()]
         end
+
+        available = false
+        records = Array.new
+
         for attempt in 0..(scheduleCodes.length - 1)
             scheduleCode = scheduleCodes[attempt]
             log(DebugLabel, "checking schedule #{scheduleCode}")

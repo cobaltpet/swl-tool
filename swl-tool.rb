@@ -717,13 +717,27 @@ def main
     eibiParser.localFilePath = storagePathSubdirectory("eibi")
     createDirectoryIfNeeded(eibiParser.localFilePath)
 
-    # BUG: choose the schedule code here, whether automatic + fallback, or user-specified
-    records = eibiParser.broadcastEntryRecordsForScheduleCode("a17")
-    $schedule.push(records).flatten!
-    
-    selfishStats()
-    doubleDebug()
-    showMatchingScheduleData()
+    scheduleCodes = nil
+    # first check if the user is overriding the automatic schedule fetch with a specific schedule code
+    if $options.keys.include?(ScheduleOptionKey)
+        scheduleCodes = [$options[ScheduleOptionKey]]
+    else
+        # otherwise use the current and previous schedule codes
+        scheduleCodes = [currentScheduleCode(), previousScheduleCode()]
+    end
+    for attempt in 0..(scheduleCodes.length - 1)
+        scheduleCode = scheduleCodes[attempt]
+        log(DebugLabel, "checking schedule #{scheduleCode}")
+
+        records = eibiParser.broadcastEntryRecordsForScheduleCode("a17")
+        if records.count > 0
+            $schedule.push(records).flatten!
+            selfishStats()
+            doubleDebug()
+            showMatchingScheduleData()
+            break
+        end
+    end
 end
 
 main()
