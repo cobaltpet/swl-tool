@@ -15,7 +15,6 @@ require_relative '_EiBiScheduleParser'
 # TODO: incorporate hfcc.org?
 # TODO: add ionosphere day/night filters -id -in to prefer compatible frequencies -- determine the cutoff? 11MHz?
 # TODO: add local sunrise-sunset lookups to automatically assist with ionosphere advice
-# TODO: add a time station filter: why doesn't "-l TS" work? (must match full string; can't use -TS as a broadcaster filter due to the hyphen)
 # TODO: update BroadcastEntry with station type and program contents flags?
 # TODO: day of week filtering when using -tn option
 # TODO: allow customization of file path for those who already have an EiBi archive or wish to keep files in a particular location
@@ -41,7 +40,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 Author = "Eric Weatherall"
 AuthorEmail = "cobaltpet gmail com"
 AuthorBlog = "http://cobaltpet.blogspot.com/"
-ScriptVersion = "2017-09-06 0231UTC"
+ScriptVersion = "2017-09-06 1907UTC"
 
 ### Options
 
@@ -172,13 +171,17 @@ def parseCommandLineOptions
         when "-l"
             requireParameterForOption(opt, options)
             disallowOptionDuplication(opt)
+            log(WarningLabel, "Language filter support is currently broken. See https://github.com/cobaltpet/swl-tool/issues/30")
             language = options.shift
             $options[LanguageOptionKey] = language
         when "-le"
+            log(WarningLabel, "Language filter support is currently broken. See https://github.com/cobaltpet/swl-tool/issues/30")
             $options[LanguageOptionKey] = "E"
         when "-lk"
+            log(WarningLabel, "Language filter support is currently broken. See https://github.com/cobaltpet/swl-tool/issues/30")
             $options[LanguageOptionKey] = "K"
         when "-ls"
+            log(WarningLabel, "Language filter support is currently broken. See https://github.com/cobaltpet/swl-tool/issues/30")
             $options[LanguageOptionKey] = "S"
         when "-m"
             requireParameterForOption(opt, options)
