@@ -3,6 +3,8 @@
 # _Filter.rb -- Filter methods for swl-tool
 # Refer to swl-tool.rb for author info, software license, and script version
 
+require_relative '_Common'
+
 # shortwave broadcast band reference: https://en.wikipedia.org/wiki/Shortwave_bands#International_broadcast_bands
 def doesFrequencyMatchMeterBand(freq, mb, tolerance)
     result = true
@@ -79,10 +81,11 @@ def doesBroadcastMatchBroadcastFlagsFilter(bc, requiredFlags)
     return match
 end
 
-def doesBroadcastMatchFrequencyFilter(bc, frequency, tolerance)
+def doesBroadcastMatchFrequencyFilter(bc, requiredFrequency, frequencyTolerance)
     match = nil
-    unless nil == frequency
-        if nil == tolerance
+    frequency = bc[:frequency]
+    unless nil == requiredFrequency
+        if nil == frequencyTolerance
             match = (frequency == requiredFrequency)
         else
             match = (requiredFrequency-frequencyTolerance..requiredFrequency+frequencyTolerance).include?(frequency)
@@ -154,17 +157,26 @@ def doesBroadcastMatchTimeFilter(bc, requiredHour, requiredMinute)
     else
         toleranceMinutes = 30
         # convert start time, end time, and current time to minutes offset from 0000 UTC for easy comparison
-        broadcastStartMinutes = ((bc[:startHour] * 60) + bc[:startMinute]) - toleranceMinutes
-        broadcastEndMinutes = ((bc[:endHour] * 60) + bc[:endMinute]) + toleranceMinutes
+        broadcastStartMinutes = ((bc[:startHour] * 60) + bc[:startMinute])
+        broadcastEndMinutes = ((bc[:endHour] * 60) + bc[:endMinute])
+
+        inverted = nil
         if broadcastEndMinutes < broadcastStartMinutes
             # the broadcast wraps around 0000 UTC
-        end
-        fMinutes = filterMinutes(requiredHour, requiredMinute)
-        if (broadcastStartMinutes <= fMinutes) && (broadcastEndMinutes >= fMinutes)
-            match = true
+            log(DebugLabel, "inverted time range")
+            inverted = true
+            tmp = broadcastStartMinutes
+            broadcastStartMinutes = broadcastEndMinutes + toleranceMinutes
+            broadcastEndMinutes = tmp - toleranceMinutes
         else
-            match = false
+            inverted = false
+            broadcastStartMinutes -= toleranceMinutes
+            broadcastEndMinutes += toleranceMinutes
         end
+
+        fMinutes = filterMinutes(requiredHour, requiredMinute)
+        within = (broadcastStartMinutes <= fMinutes) && (broadcastEndMinutes >= fMinutes)
+        match = within != inverted
     end
     return match
 end
