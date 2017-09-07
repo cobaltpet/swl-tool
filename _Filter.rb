@@ -166,6 +166,7 @@ def doesBroadcastMatchTimeFilter(bc, requiredHour, requiredMinute)
             log(DebugLabel, "inverted time range")
             inverted = true
             tmp = broadcastStartMinutes
+            toleranceMinutes += 1
             broadcastStartMinutes = broadcastEndMinutes + toleranceMinutes
             broadcastEndMinutes = tmp - toleranceMinutes
         else
