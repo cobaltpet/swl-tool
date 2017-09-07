@@ -285,7 +285,7 @@ Entry #11: As 10, but end date. Additionally, the date of the most recent log ca
         assert ep.isEiBiFetchNeeded(sc)
         fakeA17File = ep.localFilePath + ep.filenameForEiBiSchedule(sc)
         filesToRemove.push(fakeA17File)
-        File.new(fakeA17File, "w") { }
+        File.open(fakeA17File, "w") { }
         assert false == ep.isEiBiFetchNeeded(sc)
 
         sc = "b16"
