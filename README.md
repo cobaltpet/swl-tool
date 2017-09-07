@@ -62,6 +62,14 @@ Example output
 Versions
 ========
 
-0.1 (2017-09-07): Implemented unit tests for EiBi schedule parser and schedule filters; language and region filters have issues
+0.1 (2017-09-07)
+----------------
+*   Download, persist, and parse EiBi CSV shortwave broadcast schedules
+*   Display schedule data filtered by broadcaster, frequency, meter band, language, target region, or time
+*   Specify previous schedule codes (e.g. b15) to show historical schedule data when available
+*   Unit test coverage includes the EiBi CSV parser and schedule filters (with the exception of language and region filters)
 
-0.2 (future): Improve language and region filter implementations
+0.2 (future)
+------------
+*   Planned: improved language and region filter implementations
+*   Planned: unit test coverage for language and region filters
