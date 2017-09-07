@@ -58,3 +58,10 @@ Example output
     s:  6145 kHz : [0000 - 0300 S......] : Mighty KBC              : English to NAm
     s:  6160 kHz : [0000 - 2400 SMTWTFS] : CKZN St John's          : English to ENA
     s:  6165 kHz : [0000 - 0100 SMTWTFS] : Radio Habana Cuba       : English to CNA
+
+Versions
+========
+
+0.1 (2017-09-07): Implemented unit tests for EiBi schedule parser and schedule filters; language and region filters have issues
+
+0.2 (future): Improve language and region filter implementations
