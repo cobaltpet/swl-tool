@@ -32,6 +32,13 @@ class TestFilter < Test::Unit::TestCase
         assert doesFrequencyMatchMeterBand(mbLow - 5, mb, 10)
         assert doesFrequencyMatchMeterBand(mbHigh + 5, mb, 10)
         assert false == doesFrequencyMatchMeterBand(mbHigh + 10, mb, 5)
+
+        # test tolerance boundaries
+        tolerance = 20
+        assert false == doesFrequencyMatchMeterBand(mbLow - tolerance - 1, mb, tolerance)
+        assert doesFrequencyMatchMeterBand(mbLow - tolerance, mb, tolerance)
+        assert doesFrequencyMatchMeterBand(mbHigh + tolerance, mb, tolerance)
+        assert false == doesFrequencyMatchMeterBand(mbHigh + tolerance + 1, mb, tolerance)
     end
 
     def testMeterBands
@@ -53,6 +60,22 @@ class TestFilter < Test::Unit::TestCase
 
     def testMeterBandsTrueIfNil
         assert doesFrequencyMatchMeterBand(8400, nil, 0)
+    end
+
+    def testMeterBandsWrongBand
+        assert false == doesFrequencyMatchMeterBand(3300, 120, 0)
+        assert false == doesFrequencyMatchMeterBand(5900, 60, 0)
+        assert false == doesFrequencyMatchMeterBand(7300, 49, 0)
+        assert false == doesFrequencyMatchMeterBand(11950, 31, 0)
+        assert false == doesFrequencyMatchMeterBand(15240, 25, 0)
+    end
+
+    def testInvalidMeterBand
+        assert false == doesFrequencyMatchMeterBand(3700, 80, 0)
+        assert false == doesFrequencyMatchMeterBand(6950, 43, 0)
+        assert false == doesFrequencyMatchMeterBand(7100, 40, 0)
+        assert false == doesFrequencyMatchMeterBand(14100, 20, 0)
+        assert false == doesFrequencyMatchMeterBand(18100, 17, 0)
     end
 
     ### Broadcaster
@@ -97,6 +120,13 @@ class TestFilter < Test::Unit::TestCase
         assert doesBroadcastMatchBroadcastFlagsFilter(bc, nil)
     end
 
+    def testBroadcastFlagsFilterFalseIfUnset
+        bc = BroadcastEntry.new
+
+        assert false == doesBroadcastMatchBroadcastFlagsFilter(bc, BroadcastFlagAnalog)
+        assert false == doesBroadcastMatchBroadcastFlagsFilter(bc, BroadcastFlagDigital)
+    end
+
     ### Frequency
 
     def testBroadcastFrequencyFilter
@@ -136,6 +166,14 @@ class TestFilter < Test::Unit::TestCase
 
         assert doesBroadcastMatchFrequencyFilter(bc, freq, nil)
         assert doesBroadcastMatchFrequencyFilter(bc, nil, nil)
+    end
+
+    def testBroadcastFrequencyFilterFalseIfUnset
+        bc = BroadcastEntry.new
+
+        assert false == doesBroadcastMatchFrequencyFilter(bc, 5900, nil)
+        assert false == doesBroadcastMatchFrequencyFilter(bc, 9490, nil)
+        assert false == doesBroadcastMatchFrequencyFilter(bc, 15160, nil)
     end
 
     ### Language
