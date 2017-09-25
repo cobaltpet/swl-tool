@@ -4,39 +4,43 @@
 # Refer to swl-tool.rb for author info, software license, and script version
 
 # Source: http://eibispace.de/dx/README.TXT
+# Source: https://en.wikipedia.org/wiki/List_of_ISO_639-3_codes
+
+# Comment about A=>arb in the eibi hash below: With many variants available in ISO 639-3 and EiBi merely specifying "Arabic", I have chosen the "Arabic (standard)" individual language entry. The next best choice appears to be "ara" for the macro language entry, but I don't believe macro languages should be used here.
+
 $eibiLanguageCodeToISO639dash3 = {
-    "-CW" => "",
-    "-MX" => "",
-    "-TS" => "",
-    "-TY" => "",
-    "A"   => "",
-    "AB"  => "",
-    "AC"  => "",
-    "ACH" => "",
-    "AD"  => "",
-    "ADI" => "",
-    "AF"  => "",
-    "AFA" => "",
-    "AFG" => "",
-    "AH"  => "",
-    "AJ"  => "",
-    "AK"  => "",
-    "AL"  => "",
-    "ALG" => "",
-    "AM"  => "",
-    "AMD" => "",
-    "Ang" => "",
-    "AR"  => "",
-    "ARO" => "",
-    "ARU" => "",
-    "ASS" => "",
-    "ASY" => "",
-    "ATS" => "",
-    "Aud" => "",
-    "AV"  => "",
-    "AW"  => "",
-    "AY"  => "",
-    "AZ"  => "",
+#    "-CW" => "", # Morse Station (broadcast attribute, not a language)
+#    "-MX" => "", # Music (broadcast attribute, not a language)
+#    "-TS" => "", # Time Signal Station (broadcast attribute, not a language)
+#    "-TY" => "", # Teletype Station (broadcast attribute, not a language)
+    "A"   => "arb", 
+    "AB"  => "abk", # Mismatch: EiBi specifies "Abkhaz" and ISO 639-3 specifies "Abkhazian"
+    "AC"  => "ace",
+    "ACH" => "acn",
+    "AD"  => "ady", # Mismatch: EiBi specifies "Adygea / Adyghe / Circassian" and ISO 639-3 specifies "Adyghe; Adygei"
+    "ADI" => "adi", # Choice: selected "adi" for "Adi" instead of similar "adl" for "Adi (Galo)"
+    "AF"  => "afr",
+    "AFA" => "aar",
+    "AFG" => "", # Problem: EiBi specifies "Pashto and Dari (main Afghan languages, see there)"; no direct mapping possible
+    "AH"  => "amh",
+    "AJ"  => "ajg", # Choice: Selected "ajg" instead of similar "aja". EiBi specifies "Adja / Aja-Gbe: Benin, Togo" and ISO 639-3 specifies "Aja (Benin)"
+    "AK"  => "ahk",
+    "AL"  => "", # Problem: ISO 639-3 specifies four variants and a macro language; EiBi only specifies "Albanian" so it's not clear which variant to use.
+    "ALG" => "arq", # Choice: selected "arq" for "Arabic (Algerian)" instead of similar "aao" for "Arabic (Algerian Sahara)"
+    "AM"  => "", # Problem: ISO 639-3 does not have an entry for Amoy, Amoy Hokkien, or Xiamenese. https://en.wikipedia.org/wiki/Amoy_dialect
+    "AMD" => "adx",
+    "Ang" => "", # Problem: doesn't map directly to one language. See https://en.wikipedia.org/wiki/Angelus
+    "AR"  => "hye", # Choice: selected "hye" for "Armenian" instead of similar "axm" for "Armenian, Middle"
+    "ARO" => "rup",
+    "ARU" => "", # Problem: EiBi specifies "Languages of Arunachal, India (collectively)"; no direct mapping possible
+    "ASS" => "asm",
+    "ASY" => "aii",
+    "ATS" => "atb", # Mismatch: EiBi specifies "Atsi / Zaiwa" and ISO 639-3 specifies "Zaiwa"
+    "Aud" => "", # Problem: doesn't map directly to one language.
+    "AV"  => "ava", # Choice: selected "ava" for "Avaric" (marked as living) instead of similar "oav" for "Avar (Old)" (marked as historical)
+    "AW"  => "awa",
+    "AY"  => "", # Problem: ISO 639-3 specifies two variants and a macro language
+    "AZ"  => "", # Problem: ISO 639-3 specifies two variants and a macro language
     "BAD" => "",
     "BAG" => "",
     "BAI" => "",
@@ -534,6 +538,7 @@ $iso639dash3LanguageCodeToEnglishName = {
 "eng" => "English"
 }
 
+=begin
 $deprecatedHashLanguages = {
 "" => "Albanian",
 "" => "Afar",
@@ -742,3 +747,4 @@ $deprecatedHashLanguages = {
 "" => "Zarma",
 "" => "Languages of Zimbabwe"
 }
+=end
