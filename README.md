@@ -37,7 +37,7 @@ Example output
     $ echo "time = now; language = english; region = north america; meter band = 49"
     time = now; language = english; region = north america; meter band = 49
 
-    ./swl-tool.rb -tn -l English -rna -m 49
+    $ ./swl-tool.rb -tn -l English -rna -m 49
     swl-tool.rb version 2017-09-07 0016UTC by Eric Weatherall : cobaltpetxxxxxxxcom : http://cobaltpet.blogspot.com/
     credit: Shortwave broadcast schedule data from EiBi
     warning: Language filter support is currently broken. See https://github.com/cobaltpet/swl-tool/issues/30
