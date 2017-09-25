@@ -69,7 +69,12 @@ Versions
 *   Specify previous schedule codes (e.g. b15) to show historical schedule data when available
 *   Unit test coverage includes the EiBi CSV parser and schedule filters (with the exception of language and region filters)
 
-0.2 (future)
+0.2 (current)
 ------------
-*   Planned: improved language and region filter implementations
-*   Planned: unit test coverage for language and region filters
+*   Planned: improved language filter implementations
+*   Planned: unit test coverage for language filters
+
+0.3 (future)
+------------
+*   Planned: improved region filter implementation
+*   Planned: unit test coverage for region filters
