@@ -45,6 +45,33 @@ ScriptVersion = "2017-09-07 0016UTC"
 
 ### Options
 
+BroadcastUserOption          = "-b"
+BroadcastTimeUserOption      = "-bt"
+DebugUserOption              = "-d"
+DoubleDebugUserOption        = "-dd"
+FrequencyUserOption          = "-f"
+FrequencyToleranceUserOption = "-ft"
+HelpUserOption               = "-h"
+InactiveUserOption           = "-i"
+LanguageUserOption           = "-l"
+LanguageEnglishUserOption    = "-le"
+LanguageFrenchUserOption     = "-lf"
+LanguageKoreanUserOption     = "-lk"
+LanguageSpanishUserOption    = "-ls"
+MeterBandUserOption          = "-m"
+MeterBandToleranceUserOption = "-mt"
+RegionUserOption             = "-r"
+RegionNAUserOption           = "-rna"
+RegionSAUserOption           = "-rsa"
+RegionEuUserOption           = "-reu"
+RegionAfUserOption           = "-raf"
+RegionAsUserOption           = "-ras"
+RegionOcUserOption           = "-roc"
+ScheduleCodeUserOption       = "-s"
+TimeUserOption               = "-t"
+TimeAnyUserOption            = "-ta"
+TimeNowUserOption            = "-tn"
+
 def setDefaultOptions
     # note that debug logging is not possible in this method
     # disable debug mode
@@ -105,12 +132,12 @@ end
 def parseCommandLineOptions
     setDefaultOptions() # this must remain as the first line
     # debug is a special case so debug logs will start right away
-    if ARGV.include?("-d") || ARGV.include?("-dd")
+    if ARGV.include?(DebugUserOption) || ARGV.include?(DoubleDebugUserOption) # -d, -dd
         $options[DebugOptionKey] = true
     end
 
     log(DebugLabel, "ARGV: #{ARGV}")
-    if ARGV.include?("-h")
+    if ARGV.include?(HelpUserOption)
         showHelpAndExit()
     else
         showTerseCredits()
@@ -123,79 +150,82 @@ def parseCommandLineOptions
         opt = options.shift
         log(DebugLabel, "opt: #{opt}")
         case opt
-        when "-d"
+        when DebugUserOption # -d
             # debug already handled above
             {}
-        when "-dd"
+        when DoubleDebugUserOption # -dd
             $options[DebugDebugOptionKey] = true
             $options[DebugOptionKey] = true
-        when "-b"
+        when BroadcastUserOption # -b
             requireParameterForOption(opt, options)
             disallowOptionDuplication(opt)
             broadcaster = options.shift
             $options[BroadcasterOptionKey] = broadcaster
-        when "-bt"
+        when BroadcastTimeUserOption # -bt
             # this is described as a broadcaster option but we are searching for a specific language code
             # the options -b and -bt may be used together since they write into distinct option keys
             $options[BroadcastFlagsOptionKey] = BroadcastFlagTime
             removeTimeKeys = true
-        when "-f"
+        when FrequencyUserOption # -f
             requireParameterForOption(opt, options)
             disallowOptionDuplication(opt)
-            disallowOptionPairs("-f", "-m")
+            disallowOptionPairs(FrequencyUserOption, MeterBandUserOption)
             frequency = options.shift.to_i
             $options[FrequencyOptionKey] = frequency
-        when "-ft"
+        when FrequencyToleranceUserOption # -ft
             requireParameterForOption(opt, options)
-            requirePairedOptions(opt, "-f") # frequency tolerance makes no sense without -f
+            requirePairedOptions(opt, FrequencyUserOption) # frequency tolerance makes no sense without -f
             fTolerance = options.shift.to_i
             $options[FrequencyToleranceOptionKey] = fTolerance
-        when "-i"
+        when InactiveUserOption # -i
             $options[InactiveDisplayOptionKey] = true
-        when "-l"
+        when LanguageUserOption # -l
             requireParameterForOption(opt, options)
             disallowOptionDuplication(opt)
             log(WarningLabel, "Language filter support is currently broken. See https://github.com/cobaltpet/swl-tool/issues/30")
             language = options.shift
             $options[LanguageOptionKey] = language
-        when "-le"
+        when LanguageEnglishUserOption # -le
             log(WarningLabel, "Language filter support is currently broken. See https://github.com/cobaltpet/swl-tool/issues/30")
             $options[LanguageOptionKey] = "E"
-        when "-lk"
+        when LanguageFrenchUserOption # -lf
+            log(WarningLabel, "Language filter support is currently broken. See https://github.com/cobaltpet/swl-tool/issues/30")
+            $options[LanguageOptionKey] = "F"
+        when LanguageKoreanUserOption # -lk
             log(WarningLabel, "Language filter support is currently broken. See https://github.com/cobaltpet/swl-tool/issues/30")
             $options[LanguageOptionKey] = "K"
-        when "-ls"
+        when LanguageSpanishUserOption # -ls
             log(WarningLabel, "Language filter support is currently broken. See https://github.com/cobaltpet/swl-tool/issues/30")
             $options[LanguageOptionKey] = "S"
-        when "-m"
+        when MeterBandUserOption # -m
             requireParameterForOption(opt, options)
             disallowOptionDuplication(opt)
-            disallowOptionPairs("-f", "-m")
+            disallowOptionPairs(FrequencyUserOption, MeterBandUserOption)
             mb = options.shift.to_i
             $options[MeterBandOptionKey] = mb
-        when "-mt"
+        when MeterBandToleranceUserOption # -mt
             requireParameterForOption(opt, options)
-            requirePairedOptions(opt, "-m") # meter tolerance makes no sense without -m
+            requirePairedOptions(opt, MeterBandUserOption) # meter tolerance makes no sense without -m
             mTolerance = options.shift.to_i
             $options[MeterBandToleranceOptionKey] = mTolerance
-        when "-r"
+        when RegionUserOption # -r
             requireParameterForOption(opt, options)
             disallowOptionDuplication(opt)
             region = options.shift
             $options[RegionOptionKey] = region
-        when "-rna"
+        when RegionNAUserOption # -rna
             $options[RegionOptionKey] = "NAm"
-        when "-rsa"
+        when RegionSAUserOption # -rsa
             $options[RegionOptionKey] = "SAm"
-        when "-reu"
+        when RegionEuUserOption # -reu
             $options[RegionOptionKey] = "Eu"
-        when "-raf"
+        when RegionAfUserOption # -raf
             $options[RegionOptionKey] = "Af"
-        when "-ras"
+        when RegionAsUserOption # -ras
             $options[RegionOptionKey] = "As"
-        when "-roc"
+        when RegionOcUserOption # -roc
             $options[RegionOptionKey] = "Oc"
-        when "-s"
+        when ScheduleCodeUserOption # -s
             requireParameterForOption(opt, options)
             scheduleCode = options.shift
             if scheduleCode.length != 3
@@ -203,14 +233,14 @@ def parseCommandLineOptions
             end
             $options[ScheduleOptionKey] = scheduleCode.downcase
             # forcing a schedule code changes time behavior from -tn to -ta unless the user requests otherwise
-            unless ARGV.include?("-t") || ARGV.include?("-tn")
+            unless ARGV.include?(TimeUserOption) || ARGV.include?(TimeNowUserOption)
                 removeTimeKeys = true
             end
-        when "-t"
+        when TimeUserOption # -t
             requireParameterForOption(opt, options)
             disallowOptionDuplication(opt)
-            disallowOptionPairs("-t", "-ta")
-            disallowOptionPairs("-t", "-tn")
+            disallowOptionPairs(TimeUserOption, TimeAnyUserOption) # -t, -ta
+            disallowOptionPairs(TimeUserOption, TimeNowUserOption) # -t, -tn
             timeString = options.shift
             if timeString.length == 4
                 hour = timeString[0,2].to_i
@@ -219,18 +249,18 @@ def parseCommandLineOptions
                     $options[HourOptionKey] = hour
                     $options[MinuteOptionKey] = minute
                 else
-                    log(ErrorLabel, "Invalid time string passed to -t! #{timeString} does not satisfy h(0..23) & m(0..59)")
+                    log(ErrorLabel, "Invalid time string passed to #{TimeUserOption}! #{timeString} does not satisfy h(0..23) & m(0..59)")
                 end
             else
-                log(ErrorLabel, "Incorrect parameter length for -t!")
+                log(ErrorLabel, "Incorrect parameter length for #{TimeUserOption}!")
             end
-        when "-ta"
-            disallowOptionPairs("-t", "-ta")
-            disallowOptionPairs("-ta", "-tn")
+        when TimeAnyUserOption # -ta
+            disallowOptionPairs(TimeUserOption, TimeAnyUserOption) # -t, -ta
+            disallowOptionPairs(TimeAnyUserOption, TimeNowUserOption) # -ta, -tn
             removeTimeKeys = true
-        when "-tn"
-            disallowOptionPairs("-t", "-tn")
-            disallowOptionPairs("-ta", "-tn")
+        when TimeNowUserOption # -tn
+            disallowOptionPairs(TimeUserOption, TimeNowUserOption) # -t, -tn
+            disallowOptionPairs(TimeAnyUserOption, TimeNowUserOption) # -ta, -tn
             {}
         else
             log(WarningLabel, "Unrecognized option: #{opt}")
@@ -262,25 +292,25 @@ def showHelpAndExit
     puts
     puts "Usage: swl-tool.rb [options]"
     puts
-    puts "  -d  : show debug log messages"
-    puts "  -dd : show lots of debug log messages"
-    puts "  -h  : show help and exit"
+    puts "  #{DebugUserOption}  : show debug log messages" # -d
+    puts "  #{DoubleDebugUserOption} : show lots of debug log messages" # -dd
+    puts "  #{HelpUserOption}  : show help and exit" # -h
     puts
-    puts "  -b [broadcaster] : display broadcasts by this broadcaster"
-    puts "  -bt : display time stations"
-    puts "  -f [frequency in kHz] : display broadcasts on this frequency"
-    puts "  -ft [frequency in kHz] : use a +- tolerance when filtering by frequency (must also use -f)"
-    puts "  -i : display inactive broadcasts"
-    puts "  -l [language] : display broadcasts that use this language (EiBi language codes)"
-    puts "  -le, -lk, -ls : shortcuts for specifying languages"
-    puts "  -m [meterband] : display broadcasts within this meter band"
-    puts "  -mt [frequency in kHz]: use a +- tolerance when confining to a meter band (must also use -m)"
-    puts "  -r [region] : display broadcasts targeting this region"
-    puts "  -rna, -rsa, -reu, -raf, -ras, -roc : shortcuts for specifying regions"
-    puts "  -s [xnn] : force this schedule code rather than using the current period"
-    puts "  -t [hhmm] : display broadcasts around this time in UTC"
-    puts "  -ta : display broadcasts at any time"
-    puts "  -tn : display broadcasts around now [default]"
+    puts "  #{BroadcastUserOption} [broadcaster] : display broadcasts by this broadcaster" # -b
+    puts "  #{BroadcastTimeUserOption} : display time stations" # -bt
+    puts "  #{FrequencyUserOption} [frequency in kHz] : display broadcasts on this frequency" # -f
+    puts "  #{FrequencyToleranceUserOption} [frequency in kHz] : use a +- tolerance when filtering by frequency (must also use #{FrequencyUserOption})" # -ft, -f
+    puts "  #{InactiveUserOption} : display inactive broadcasts" # -i
+    puts "  #{LanguageUserOption} [language] : display broadcasts that use this language (EiBi language codes)" # -l
+    puts "  -le, -lf, -lk, -ls : shortcuts for specifying languages" # -le, -lf, -lk, -ls
+    puts "  #{MeterBandUserOption} [meterband] : display broadcasts within this meter band" # -m
+    puts "  #{MeterBandToleranceUserOption} [frequency in kHz]: use a +- tolerance when confining to a meter band (must also use #{MeterBandUserOption})" # -mt, -m
+    puts "  #{RegionUserOption} [region] : display broadcasts targeting this region" # -r
+    puts "  -rna, -rsa, -reu, -raf, -ras, -roc : shortcuts for specifying regions" # -rna, -rsa, -reu, -raf, -ras, -roc
+    puts "  #{ScheduleCodeUserOption} [xnn] : force this schedule code rather than using the current period" # -s
+    puts "  #{TimeUserOption} [hhmm] : display broadcasts around this time in UTC" # -t
+    puts "  #{TimeAnyUserOption} : display broadcasts at any time" # -ta
+    puts "  #{TimeNowUserOption} : display broadcasts around now [default]" # -tn
     exit(1)
 end
 
